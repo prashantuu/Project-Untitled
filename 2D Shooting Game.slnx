@@ -1,7 +1,0 @@
-<Solution>
-  <Configurations>
-    <Platform Name="x64" />
-    <Platform Name="x86" />
-  </Configurations>
-  <Project Path="2D Shooter Game/2D Shooter Game.vcxproj" Id="04c67052-01d7-4391-9801-d4a20f49380f" />
-</Solution>
