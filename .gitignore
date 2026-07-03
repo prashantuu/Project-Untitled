@@ -1,0 +1,25 @@
+# Build folders
+build/
+
+# Visual Studio
+.vs/
+*.VC.db
+
+# Executables
+*.exe
+*.dll
+*.pdb
+
+# Object files
+*.obj
+
+# User settings
+*.user
+*.suo
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+
+# Logs
+*.log
