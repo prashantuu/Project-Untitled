@@ -11,6 +11,8 @@ public:
     void update(sf::Time deltaTime, const sf::RenderWindow& window);
     void draw(sf::RenderWindow& window);
 
+    void shoot();
+
 private:
     void handleMovement(sf::Time deltaTime);
     void handleRotation(const sf::RenderWindow& window);

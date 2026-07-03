@@ -28,13 +28,21 @@ void Game::processEvents()
         {
             m_window.close();
         }
+
+        if (const auto* mouseButton = event->getIf<sf::Event::MouseButtonPressed>())
+        {
+            if (mouseButton->button == sf::Mouse::Button::Left)
+            {
+                // Game doesn't know HOW shooting works — it just
+                // tells the player "the shoot button was pressed."
+                m_player.shoot();
+            }
+        }
     }
 }
 
 void Game::update(sf::Time deltaTime)
 {
-    // Game still doesn't know HOW the player moves or rotates.
-    // It just passes along what Player needs: time and window (for mouse).
     m_player.update(deltaTime, m_window);
 }
 
