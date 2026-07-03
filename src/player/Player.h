@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include "weapon/Weapon.h"
 
 class Player
 {
@@ -16,6 +17,7 @@ private:
 
 private:
     sf::RectangleShape m_shape;
+    Weapon m_weapon;
 
     static const float SPEED;
 };

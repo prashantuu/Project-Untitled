@@ -6,8 +6,6 @@ const float Player::SPEED = 200.f;
 Player::Player()
     : m_shape({40.f, 20.f})
 {
-    // Center the origin so the player rotates around its middle,
-    // not around the top-left corner.
     m_shape.setOrigin({20.f, 10.f});
 
     m_shape.setFillColor(sf::Color::Green);
@@ -18,6 +16,10 @@ void Player::update(sf::Time deltaTime, const sf::RenderWindow& window)
 {
     handleMovement(deltaTime);
     handleRotation(window);
+
+    // Player doesn't know HOW the weapon draws or aims itself —
+    // it just tells the weapon where it is and which way it's facing.
+    m_weapon.update(m_shape.getPosition(), m_shape.getRotation());
 }
 
 void Player::handleMovement(sf::Time deltaTime)
@@ -38,27 +40,18 @@ void Player::handleMovement(sf::Time deltaTime)
 
 void Player::handleRotation(const sf::RenderWindow& window)
 {
-    // Mouse position in window (pixel) coordinates.
     sf::Vector2i mousePixel = sf::Mouse::getPosition(window);
-
-    // Convert to world coordinates (matters once we add a camera/view).
     sf::Vector2f mouseWorld = window.mapPixelToCoords(mousePixel);
 
     sf::Vector2f playerPos = m_shape.getPosition();
-
-    // Direction = Mouse Position - Player Position
     sf::Vector2f direction = mouseWorld - playerPos;
 
-    // atan2 gives us the angle (in radians) between the direction vector
-    // and the positive x-axis. Since our rectangle's "front" already
-    // points along +x after centering the origin, we can use this
-    // angle directly as the rotation.
     float angleRadians = std::atan2(direction.y, direction.x);
-
     m_shape.setRotation(sf::radians(angleRadians));
 }
 
 void Player::draw(sf::RenderWindow& window)
 {
     window.draw(m_shape);
+    m_weapon.draw(window);
 }
