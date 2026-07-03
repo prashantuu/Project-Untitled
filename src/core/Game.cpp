@@ -33,7 +33,9 @@ void Game::processEvents()
 
 void Game::update(sf::Time deltaTime)
 {
-    m_player.update(deltaTime);
+    // Game still doesn't know HOW the player moves or rotates.
+    // It just passes along what Player needs: time and window (for mouse).
+    m_player.update(deltaTime, m_window);
 }
 
 void Game::render()
