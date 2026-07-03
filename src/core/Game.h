@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include "player/Player.h"
 
 class Game
 {
@@ -16,7 +17,5 @@ private:
 
 private:
     sf::RenderWindow m_window;
-    sf::CircleShape   m_player;
-
-    static const float PLAYER_SPEED;
+    Player m_player;
 };
