@@ -80,3 +80,8 @@ void EnemyManager::checkPlayerCollision(Player& player)
         }
     }
 }
+
+std::size_t EnemyManager::getEnemyCount() const
+{
+    return m_enemies.size();
+}

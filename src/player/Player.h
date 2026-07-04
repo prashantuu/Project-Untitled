@@ -24,6 +24,7 @@ public:
 
     void takeDamage(int amount);
     int getHealth() const;
+    int getMaxHealth() const;
     bool isAlive() const;
 
 private:

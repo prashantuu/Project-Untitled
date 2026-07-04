@@ -37,6 +37,7 @@ Game::Game()
     , m_camera({800.f, 600.f})
     , m_gameOver(false)
     , m_gameOverText(m_font)
+    , m_hud(m_font)
 {
     m_window.setFramerateLimit(60);
 
@@ -52,6 +53,8 @@ Game::Game()
 
     sf::FloatRect bounds = m_gameOverText.getLocalBounds();
     m_gameOverText.setOrigin({bounds.size.x / 2.f, bounds.size.y / 2.f});
+
+    m_audioManager.playMusic();
 }
 
 void Game::run()
@@ -82,6 +85,7 @@ void Game::processEvents()
             if (!m_gameOver && mouseButton->button == sf::Mouse::Button::Left)
             {
                 m_player.shoot();
+                m_audioManager.playGunshot();
             }
         }
     }
@@ -89,6 +93,8 @@ void Game::processEvents()
 
 void Game::update(sf::Time deltaTime)
 {
+    m_audioManager.update();
+
     if (m_gameOver)
         return;
 
@@ -98,12 +104,23 @@ void Game::update(sf::Time deltaTime)
     m_camera.follow(m_player.getPosition());
 
     m_enemyManager.update(deltaTime, m_player.getPosition());
-    m_enemyManager.checkCollisions(m_player);
-    m_enemyManager.checkPlayerCollision(m_player);
+
+    std::size_t enemiesDestroyed = m_enemyManager.checkCollisions(m_player);
+    for (std::size_t i = 0; i < enemiesDestroyed; ++i)
+    {
+        m_audioManager.playEnemyDeath();
+    }
+
+    if (m_enemyManager.checkPlayerCollision(m_player))
+    {
+        m_audioManager.playPlayerHit();
+    }
 
     if (!m_player.isAlive())
     {
         m_gameOver = true;
+        m_audioManager.playGameOver();
+        m_audioManager.stopMusic(); // optional, per spec
     }
 }
 
@@ -118,6 +135,15 @@ void Game::render()
         m_tileMap.draw(m_window);
         m_enemyManager.draw(m_window);
         m_player.draw(m_window);
+
+        // World rendering is done with the camera's view. UI
+        // rendering happens in screen space, so switch back to
+        // the window's default view before drawing the HUD —
+        // otherwise it would move/scroll along with the camera.
+        m_window.setView(m_window.getDefaultView());
+
+        m_hud.draw(m_window, m_player.getHealth(), m_player.getMaxHealth(),
+            m_enemyManager.getEnemyCount());
     }
     else
     {

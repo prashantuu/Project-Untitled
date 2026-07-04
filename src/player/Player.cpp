@@ -124,6 +124,11 @@ int Player::getHealth() const
     return m_currentHealth;
 }
 
+int Player::getMaxHealth() const
+{
+    return m_maxHealth;
+}
+
 bool Player::isAlive() const
 {
     return m_currentHealth > 0;

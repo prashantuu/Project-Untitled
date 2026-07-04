@@ -5,6 +5,7 @@
 #include "enemy/EnemyManager.h"
 #include "graphics/Camera.h"
 #include "world/TileMap.h"
+#include "ui/HUD.h"
 
 class Game
 {
@@ -32,4 +33,5 @@ private:
 
     sf::Font m_font;
     sf::Text m_gameOverText;
+    HUD m_hud;
 };
