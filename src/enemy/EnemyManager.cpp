@@ -1,19 +1,54 @@
 #include "enemy/EnemyManager.h"
 #include <algorithm>
+#include <ctime>
 
-EnemyManager::EnemyManager()
+const sf::Time EnemyManager::SPAWN_INTERVAL = sf::seconds(3.f);
+const std::size_t EnemyManager::MAX_ENEMIES = 10;
+
+EnemyManager::EnemyManager(sf::Vector2f worldSize)
+    : m_worldSize(worldSize)
+    , m_spawnTimer(sf::Time::Zero)
+    , m_randomEngine(static_cast<unsigned int>(std::time(nullptr)))
 {
-    // Spawn points chosen to land inside open floor tiles
-    // of the current level layout.
-    spawnEnemy({1600.f, 300.f});
-    spawnEnemy({1700.f, 900.f});
-    spawnEnemy({300.f, 1300.f});
+    // Start with a couple already in the world so it's not empty
+    // the instant you press play.
+    spawnEnemy(getRandomSpawnPosition());
+    spawnEnemy(getRandomSpawnPosition());
 }
 
 void EnemyManager::update(sf::Time deltaTime, sf::Vector2f playerPosition)
 {
     for (auto& enemy : m_enemies)
         enemy.update(deltaTime, playerPosition);
+
+    updateSpawning(deltaTime);
+}
+
+void EnemyManager::updateSpawning(sf::Time deltaTime)
+{
+    m_spawnTimer += deltaTime;
+
+    if (m_spawnTimer >= SPAWN_INTERVAL)
+    {
+        m_spawnTimer = sf::Time::Zero;
+
+        // Cap total enemies so spawning forever doesn't tank
+        // performance or overwhelm the player instantly.
+        if (m_enemies.size() < MAX_ENEMIES)
+        {
+            spawnEnemy(getRandomSpawnPosition());
+        }
+    }
+}
+
+sf::Vector2f EnemyManager::getRandomSpawnPosition()
+{
+    // Keep a small margin from the world edges so enemies
+    // don't spawn half-inside a boundary wall.
+    std::uniform_real_distribution<float> xDist(50.f, m_worldSize.x - 50.f);
+    std::uniform_real_distribution<float> yDist(50.f, m_worldSize.y - 50.f);
+
+    return { xDist(m_randomEngine), yDist(m_randomEngine) };
 }
 
 void EnemyManager::draw(sf::RenderWindow& window)
@@ -29,10 +64,6 @@ void EnemyManager::spawnEnemy(sf::Vector2f position)
 
 void EnemyManager::checkCollisions(Player& player)
 {
-    // EnemyManager owns the enemies, so it owns the responsibility
-    // of removing whichever ones got hit. It asks the player
-    // "did your bullets hit this enemy?" without knowing how
-    // that check works internally.
     m_enemies.erase(
         std::remove_if(m_enemies.begin(), m_enemies.end(),
             [&player](Enemy& enemy) { return player.checkHit(enemy.getBounds()); }),
@@ -41,9 +72,6 @@ void EnemyManager::checkCollisions(Player& player)
 
 void EnemyManager::checkPlayerCollision(Player& player)
 {
-    // EnemyManager only detects and reports — it never decides how
-    // much damage is dealt or touches the player's health directly.
-    // That decision belongs entirely to Player::takeDamage().
     for (auto& enemy : m_enemies)
     {
         if (enemy.getBounds().findIntersection(player.getBounds()))

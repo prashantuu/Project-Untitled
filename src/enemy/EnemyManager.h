@@ -2,27 +2,35 @@
 
 #include <SFML/Graphics.hpp>
 #include <vector>
+#include <random>
 #include "enemy/Enemy.h"
 #include "player/Player.h"
 
 class EnemyManager
 {
 public:
-    EnemyManager();
+    EnemyManager(sf::Vector2f worldSize);
 
     void update(sf::Time deltaTime, sf::Vector2f playerPosition);
     void draw(sf::RenderWindow& window);
 
     void spawnEnemy(sf::Vector2f position);
 
-    // Checks all enemies against the player's bullets, destroying
-    // any enemy that got hit.
     void checkCollisions(Player& player);
-
-    // Checks if any enemy is touching the player. If so, it tells
-    // the player to take damage — it never modifies health itself.
     void checkPlayerCollision(Player& player);
 
 private:
+    void updateSpawning(sf::Time deltaTime);
+    sf::Vector2f getRandomSpawnPosition();
+
+private:
     std::vector<Enemy> m_enemies;
+
+    sf::Vector2f m_worldSize;
+
+    sf::Time m_spawnTimer;
+    static const sf::Time SPAWN_INTERVAL;
+    static const std::size_t MAX_ENEMIES;
+
+    std::mt19937 m_randomEngine;
 };
