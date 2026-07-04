@@ -1,9 +1,8 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
-#include <vector>
 #include "player/Player.h"
-#include "enemy/Enemy.h"
+#include "enemy/EnemyManager.h"
 
 class Game
 {
@@ -20,5 +19,13 @@ private:
 private:
     sf::RenderWindow m_window;
     Player m_player;
-    std::vector<Enemy> m_enemies;
+    EnemyManager m_enemyManager;
+
+    // Simple flag for now. We'll upgrade this to a proper
+    // GameState enum once we have more than one non-playing state
+    // (menu, pause, victory, etc.).
+    bool m_gameOver;
+
+    sf::Font m_font;
+    sf::Text m_gameOverText;
 };
