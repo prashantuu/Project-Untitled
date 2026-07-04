@@ -13,15 +13,22 @@ void Camera::setWorldBounds(sf::Vector2f worldSize)
     m_worldSize = worldSize;
 }
 
-void Camera::follow(sf::Vector2f target)
+void Camera::follow(sf::Vector2f target, sf::Time deltaTime)
 {
-    // The camera's center can't go closer to an edge than half
-    // the view size, or it would show space beyond the world.
+    sf::Vector2f currentCenter = m_view.getCenter();
+
+    // Smoothly interpolate toward the target rather than snapping.
+    // Higher SMOOTHING = snappier; lower = laggier/floatier feel.
+    const float SMOOTHING = 6.f;
+    float lerpFactor = std::min(SMOOTHING * deltaTime.asSeconds(), 1.f);
+
+    sf::Vector2f smoothedCenter = currentCenter + (target - currentCenter) * lerpFactor;
+
     float halfWidth = m_viewSize.x / 2.f;
     float halfHeight = m_viewSize.y / 2.f;
 
-    float clampedX = std::clamp(target.x, halfWidth, m_worldSize.x - halfWidth);
-    float clampedY = std::clamp(target.y, halfHeight, m_worldSize.y - halfHeight);
+    float clampedX = std::clamp(smoothedCenter.x, halfWidth, m_worldSize.x - halfWidth);
+    float clampedY = std::clamp(smoothedCenter.y, halfHeight, m_worldSize.y - halfHeight);
 
     m_view.setCenter({clampedX, clampedY});
 }

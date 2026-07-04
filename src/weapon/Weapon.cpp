@@ -2,16 +2,23 @@
 #include <algorithm>
 
 Weapon::Weapon()
-    : m_shape({24.f, 6.f})
+    : m_sprite(m_texture)
 {
-    m_shape.setOrigin({0.f, 3.f});
-    m_shape.setFillColor(sf::Color::White);
+    // NOTE: replace with your actual downloaded gun/bullet sprites.
+    m_texture.loadFromFile("assets/sprites/weapon/gun.png");
+    m_bulletTexture.loadFromFile("assets/sprites/bullet/bullet.png");
+
+    sf::Vector2u size = m_texture.getSize();
+
+    // Origin at the left-center edge, not the middle — makes the
+    // weapon pivot like it's held in a hand.
+    m_sprite.setOrigin({0.f, size.y / 2.f});
 }
 
 void Weapon::update(sf::Time deltaTime, sf::Vector2f ownerPosition, sf::Angle ownerRotation)
 {
-    m_shape.setPosition(ownerPosition);
-    m_shape.setRotation(ownerRotation);
+    m_sprite.setPosition(ownerPosition);
+    m_sprite.setRotation(ownerRotation);
 
     for (auto& bullet : m_bullets)
         bullet.update(deltaTime);
@@ -24,7 +31,7 @@ void Weapon::update(sf::Time deltaTime, sf::Vector2f ownerPosition, sf::Angle ow
 
 void Weapon::draw(sf::RenderWindow& window)
 {
-    window.draw(m_shape);
+    window.draw(m_sprite);
 
     for (auto& bullet : m_bullets)
         bullet.draw(window);
@@ -32,16 +39,20 @@ void Weapon::draw(sf::RenderWindow& window)
 
 void Weapon::shoot()
 {
-    sf::Vector2f spawnPosition = m_shape.getTransform().transformPoint({24.f, 3.f});
-    m_bullets.emplace_back(spawnPosition, m_shape.getRotation());
+    sf::Vector2u size = m_texture.getSize();
+
+    // Spawn at the tip of the weapon sprite (its right edge),
+    // transformed into world space.
+    sf::Vector2f spawnPosition = m_sprite.getTransform().transformPoint(
+        { static_cast<float>(size.x), size.y / 2.f });
+
+    m_bullets.emplace_back(m_bulletTexture, spawnPosition, m_sprite.getRotation());
 }
 
 bool Weapon::checkHit(const sf::FloatRect& targetBounds)
 {
     for (auto it = m_bullets.begin(); it != m_bullets.end(); ++it)
     {
-        // findIntersection returns std::optional<FloatRect> in SFML 3 —
-        // it has a value only if the two rectangles actually overlap.
         if (it->getBounds().findIntersection(targetBounds))
         {
             m_bullets.erase(it);

@@ -1,10 +1,22 @@
 #include "world/TileMap.h"
 
+const float TileMap::SOURCE_TILE_SIZE = 32.f;
+
 TileMap::TileMap(const std::vector<std::string>& layout, float tileSize)
     : m_tileSize(tileSize)
     , m_columns(layout.empty() ? 0 : static_cast<int>(layout[0].size()))
     , m_rows(static_cast<int>(layout.size()))
+    , m_tileSprite(m_tilesetTexture)
 {
+    // NOTE: replace with your actual downloaded tileset. This assumes
+    // a simple horizontal strip: tile 0 = floor, tile 1 = wall, each
+    // SOURCE_TILE_SIZE x SOURCE_TILE_SIZE pixels. Adjust the indices
+    // and getTextureRect() below to match your real tileset layout.
+    m_tilesetTexture.loadFromFile("assets/sprites/tiles/tileset.png");
+
+    float scale = m_tileSize / SOURCE_TILE_SIZE;
+    m_tileSprite.setScale({scale, scale});
+
     m_tiles.resize(m_rows, std::vector<TileType>(m_columns, TileType::Floor));
 
     for (int row = 0; row < m_rows; ++row)
@@ -19,10 +31,7 @@ TileMap::TileMap(const std::vector<std::string>& layout, float tileSize)
 
 void TileMap::draw(sf::RenderWindow& window)
 {
-    // One shape, repositioned and recolored per tile — cheap for now.
-    // We'll switch to a proper tile atlas / vertex array once textures
-    // come in, since this becomes slow with big maps.
-    sf::RectangleShape tileShape({m_tileSize, m_tileSize});
+    int sourceSize = static_cast<int>(SOURCE_TILE_SIZE);
 
     for (int row = 0; row < m_rows; ++row)
     {
@@ -30,12 +39,13 @@ void TileMap::draw(sf::RenderWindow& window)
         {
             TileType type = m_tiles[row][column];
 
-            tileShape.setFillColor(
-                type == TileType::Wall ? sf::Color(70, 70, 70) : sf::Color(30, 90, 40));
+            int tileIndex = (type == TileType::Wall) ? 1 : 0;
+            m_tileSprite.setTextureRect(
+                sf::IntRect({ tileIndex * sourceSize, 0 }, { sourceSize, sourceSize }));
 
-            tileShape.setPosition({column * m_tileSize, row * m_tileSize});
+            m_tileSprite.setPosition({ column * m_tileSize, row * m_tileSize });
 
-            window.draw(tileShape);
+            window.draw(m_tileSprite);
         }
     }
 }
@@ -44,8 +54,6 @@ TileType TileMap::getTileType(int column, int row) const
 {
     if (row < 0 || row >= m_rows || column < 0 || column >= m_columns)
     {
-        // Treat anything outside the map as solid — useful once
-        // wall collision is implemented next milestone.
         return TileType::Wall;
     }
 

@@ -4,13 +4,15 @@
 const float Bullet::SPEED = 600.f;
 const sf::Time Bullet::MAX_LIFETIME = sf::seconds(2.f);
 
-Bullet::Bullet(sf::Vector2f position, sf::Angle direction)
-    : m_shape(4.f)
+Bullet::Bullet(sf::Texture& texture, sf::Vector2f position, sf::Angle direction)
+    : m_sprite(texture)
     , m_lifetime(sf::Time::Zero)
 {
-    m_shape.setOrigin({4.f, 4.f});
-    m_shape.setFillColor(sf::Color::Yellow);
-    m_shape.setPosition(position);
+    sf::Vector2u size = texture.getSize();
+    m_sprite.setOrigin({size.x / 2.f, size.y / 2.f});
+
+    m_sprite.setPosition(position);
+    m_sprite.setRotation(direction);
 
     float radians = direction.asRadians();
     m_velocity = { std::cos(radians) * SPEED, std::sin(radians) * SPEED };
@@ -18,13 +20,13 @@ Bullet::Bullet(sf::Vector2f position, sf::Angle direction)
 
 void Bullet::update(sf::Time deltaTime)
 {
-    m_shape.move(m_velocity * deltaTime.asSeconds());
+    m_sprite.move(m_velocity * deltaTime.asSeconds());
     m_lifetime += deltaTime;
 }
 
 void Bullet::draw(sf::RenderWindow& window)
 {
-    window.draw(m_shape);
+    window.draw(m_sprite);
 }
 
 bool Bullet::isAlive() const
@@ -34,5 +36,5 @@ bool Bullet::isAlive() const
 
 sf::FloatRect Bullet::getBounds() const
 {
-    return m_shape.getGlobalBounds();
+    return m_sprite.getGlobalBounds();
 }

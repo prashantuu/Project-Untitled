@@ -13,12 +13,14 @@ public:
     void draw(sf::RenderWindow& window);
 
     void shoot();
-
-    // Checks if any of this weapon's bullets hit the given bounds.
-    // If so, that bullet is destroyed and true is returned.
     bool checkHit(const sf::FloatRect& targetBounds);
 
 private:
-    sf::RectangleShape m_shape;
+    sf::Texture m_texture;
+    sf::Sprite m_sprite;
+
+    // Owned once here, referenced by every Bullet — see Bullet.h
+    // for why bullets don't each own their own texture.
+    sf::Texture m_bulletTexture;
     std::vector<Bullet> m_bullets;
 };

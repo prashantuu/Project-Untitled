@@ -13,16 +13,11 @@ enum class TileType
 class TileMap
 {
 public:
-    // layout: one string per row, '#' = wall, anything else = floor.
-    // tileSize: how big each tile is in pixels.
     TileMap(const std::vector<std::string>& layout, float tileSize);
 
     void draw(sf::RenderWindow& window);
 
     TileType getTileType(int column, int row) const;
-
-    // Total size of the map in pixels — this is what defines
-    // how big the world actually is.
     sf::Vector2f getWorldSize() const;
 
 private:
@@ -30,4 +25,15 @@ private:
     float m_tileSize;
     int m_columns;
     int m_rows;
+
+    // Only one TileMap ever exists (owned directly by Game, never
+    // stored in a container), so it's safe for it to own its own
+    // texture — no reallocation risk like Enemy/Bullet have.
+    sf::Texture m_tilesetTexture;
+    sf::Sprite m_tileSprite;
+
+    // Pixel size of a single tile *in the source tileset image*,
+    // before scaling up to m_tileSize. Adjust to match whatever
+    // tileset you download.
+    static const float SOURCE_TILE_SIZE;
 };

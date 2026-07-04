@@ -10,8 +10,9 @@ EnemyManager::EnemyManager(sf::Vector2f worldSize)
     , m_spawnTimer(sf::Time::Zero)
     , m_randomEngine(static_cast<unsigned int>(std::time(nullptr)))
 {
-    // Start with a couple already in the world so it's not empty
-    // the instant you press play.
+    // NOTE: replace with your actual downloaded enemy sprite.
+    m_enemyTexture.loadFromFile("assets/sprites/enemy/enemy.png");
+
     spawnEnemy(getRandomSpawnPosition());
     spawnEnemy(getRandomSpawnPosition());
 }
@@ -32,8 +33,6 @@ void EnemyManager::updateSpawning(sf::Time deltaTime)
     {
         m_spawnTimer = sf::Time::Zero;
 
-        // Cap total enemies so spawning forever doesn't tank
-        // performance or overwhelm the player instantly.
         if (m_enemies.size() < MAX_ENEMIES)
         {
             spawnEnemy(getRandomSpawnPosition());
@@ -43,8 +42,6 @@ void EnemyManager::updateSpawning(sf::Time deltaTime)
 
 sf::Vector2f EnemyManager::getRandomSpawnPosition()
 {
-    // Keep a small margin from the world edges so enemies
-    // don't spawn half-inside a boundary wall.
     std::uniform_real_distribution<float> xDist(50.f, m_worldSize.x - 50.f);
     std::uniform_real_distribution<float> yDist(50.f, m_worldSize.y - 50.f);
 
@@ -59,26 +56,37 @@ void EnemyManager::draw(sf::RenderWindow& window)
 
 void EnemyManager::spawnEnemy(sf::Vector2f position)
 {
-    m_enemies.emplace_back(position);
+    m_enemies.emplace_back(m_enemyTexture, position);
 }
 
-void EnemyManager::checkCollisions(Player& player)
+std::size_t EnemyManager::checkCollisions(Player& player)
 {
+    std::size_t countBefore = m_enemies.size();
+
     m_enemies.erase(
         std::remove_if(m_enemies.begin(), m_enemies.end(),
             [&player](Enemy& enemy) { return player.checkHit(enemy.getBounds()); }),
         m_enemies.end());
+
+    return countBefore - m_enemies.size();
 }
 
-void EnemyManager::checkPlayerCollision(Player& player)
+bool EnemyManager::checkPlayerCollision(Player& player)
 {
+    bool playerWasHit = false;
+
     for (auto& enemy : m_enemies)
     {
         if (enemy.getBounds().findIntersection(player.getBounds()))
         {
-            player.takeDamage(20);
+            if (player.takeDamage(20))
+            {
+                playerWasHit = true;
+            }
         }
     }
+
+    return playerWasHit;
 }
 
 std::size_t EnemyManager::getEnemyCount() const

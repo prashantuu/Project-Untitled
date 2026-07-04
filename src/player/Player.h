@@ -16,13 +16,11 @@ public:
 
     sf::Vector2f getPosition() const;
     sf::FloatRect getBounds() const;
+    void setPosition(sf::Vector2f position);
 
-    // Clamps the player's position inside the given world size.
-    // Player doesn't know or care what "the world" means beyond
-    // these numbers — that's Game's decision to make.
     void constrainToWorld(sf::Vector2f worldSize);
 
-    void takeDamage(int amount);
+    bool takeDamage(int amount);
     int getHealth() const;
     int getMaxHealth() const;
     bool isAlive() const;
@@ -33,14 +31,13 @@ private:
     void updateInvincibility(sf::Time deltaTime);
 
 private:
-    sf::RectangleShape m_shape;
+    sf::Texture m_texture;
+    sf::Sprite m_sprite;
     Weapon m_weapon;
 
     int m_currentHealth;
     int m_maxHealth;
 
-    // Invincibility is entirely Player's own concern — nobody
-    // outside this class needs to know it exists.
     bool m_isInvincible;
     sf::Time m_invincibilityTimer;
 

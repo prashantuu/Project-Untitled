@@ -11,7 +11,8 @@ public:
     // how far it's allowed to move before showing empty space.
     void setWorldBounds(sf::Vector2f worldSize);
 
-    void follow(sf::Vector2f target);
+    // deltaTime enables smooth following instead of an instant snap.
+    void follow(sf::Vector2f target, sf::Time deltaTime);
     void apply(sf::RenderWindow& window);
 
 private:
