@@ -12,6 +12,7 @@ public:
     void draw(sf::RenderWindow& window);
 
     void shoot();
+    bool checkHit(const sf::FloatRect& targetBounds);
 
 private:
     void handleMovement(sf::Time deltaTime);

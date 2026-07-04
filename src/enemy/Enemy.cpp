@@ -10,11 +10,15 @@ Enemy::Enemy(sf::Vector2f spawnPosition)
 
 void Enemy::update(sf::Time deltaTime)
 {
-    // No behavior yet — the enemy just exists and holds its position.
-    // Chasing/AI logic comes in a later milestone.
+    // Still no behavior — chasing/AI comes later.
 }
 
 void Enemy::draw(sf::RenderWindow& window)
 {
     window.draw(m_shape);
+}
+
+sf::FloatRect Enemy::getBounds() const
+{
+    return m_shape.getGlobalBounds();
 }

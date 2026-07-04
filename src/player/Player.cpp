@@ -17,9 +17,7 @@ void Player::update(sf::Time deltaTime, const sf::RenderWindow& window)
     handleMovement(deltaTime);
     handleRotation(window);
 
-    // Player doesn't know HOW the weapon draws or aims itself —
-    // it just tells the weapon where it is and which way it's facing.
-    m_weapon.update(m_shape.getPosition(), m_shape.getRotation());
+    m_weapon.update(deltaTime, m_shape.getPosition(), m_shape.getRotation());
 }
 
 void Player::handleMovement(sf::Time deltaTime)
@@ -54,4 +52,15 @@ void Player::draw(sf::RenderWindow& window)
 {
     window.draw(m_shape);
     m_weapon.draw(window);
+}
+
+void Player::shoot()
+{
+    m_weapon.shoot();
+}
+
+bool Player::checkHit(const sf::FloatRect& targetBounds)
+{
+    // Player doesn't know about bullets — it just asks its weapon.
+    return m_weapon.checkHit(targetBounds);
 }

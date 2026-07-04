@@ -10,6 +10,8 @@ public:
     void update(sf::Time deltaTime);
     void draw(sf::RenderWindow& window);
 
+    sf::FloatRect getBounds() const;
+
 private:
     sf::RectangleShape m_shape;
 };

@@ -16,8 +16,6 @@ void Weapon::update(sf::Time deltaTime, sf::Vector2f ownerPosition, sf::Angle ow
     for (auto& bullet : m_bullets)
         bullet.update(deltaTime);
 
-    // Remove bullets that have expired. Weapon owns its bullets,
-    // so it's responsible for cleaning them up too.
     m_bullets.erase(
         std::remove_if(m_bullets.begin(), m_bullets.end(),
             [](const Bullet& bullet) { return !bullet.isAlive(); }),
@@ -34,10 +32,22 @@ void Weapon::draw(sf::RenderWindow& window)
 
 void Weapon::shoot()
 {
-    // Spawn the bullet at the tip of the weapon (local point {24, 3}),
-    // transformed into world space so it accounts for the weapon's
-    // current position and rotation.
     sf::Vector2f spawnPosition = m_shape.getTransform().transformPoint({24.f, 3.f});
-
     m_bullets.emplace_back(spawnPosition, m_shape.getRotation());
+}
+
+bool Weapon::checkHit(const sf::FloatRect& targetBounds)
+{
+    for (auto it = m_bullets.begin(); it != m_bullets.end(); ++it)
+    {
+        // findIntersection returns std::optional<FloatRect> in SFML 3 —
+        // it has a value only if the two rectangles actually overlap.
+        if (it->getBounds().findIntersection(targetBounds))
+        {
+            m_bullets.erase(it);
+            return true;
+        }
+    }
+
+    return false;
 }
