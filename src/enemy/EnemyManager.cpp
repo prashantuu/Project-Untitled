@@ -5,14 +5,12 @@
 const sf::Time EnemyManager::SPAWN_INTERVAL = sf::seconds(3.f);
 const std::size_t EnemyManager::MAX_ENEMIES = 10;
 
-EnemyManager::EnemyManager(sf::Vector2f worldSize)
-    : m_worldSize(worldSize)
+EnemyManager::EnemyManager(sf::Vector2f worldSize, ResourceManager& resources)
+    : m_enemyTexture(resources.getTexture("assets/sprites/enemy/enemy_spritesheet.png"))
+    , m_worldSize(worldSize)
     , m_spawnTimer(sf::Time::Zero)
     , m_randomEngine(static_cast<unsigned int>(std::time(nullptr)))
 {
-    // NOTE: replace with your actual downloaded enemy sprite.
-    m_enemyTexture.loadFromFile("assets/sprites/enemy/enemy.png");
-
     spawnEnemy(getRandomSpawnPosition());
     spawnEnemy(getRandomSpawnPosition());
 }

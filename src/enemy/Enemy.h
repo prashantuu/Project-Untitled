@@ -1,13 +1,11 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include "graphics/Animation.h"
 
 class Enemy
 {
 public:
-    // Same reasoning as Bullet: takes a texture reference owned by
-    // EnemyManager rather than owning its own, since Enemy instances
-    // live in a std::vector that can reallocate.
     Enemy(sf::Texture& texture, sf::Vector2f spawnPosition);
 
     void update(sf::Time deltaTime, sf::Vector2f targetPosition);
@@ -20,6 +18,11 @@ private:
 
 private:
     sf::Sprite m_sprite;
+
+    // Enemies are always chasing in this design — no idle state —
+    // so just one continuously looping animation, unlike Player
+    // which switches between idle/walk.
+    Animation m_walkAnimation;
 
     static const float SPEED;
 };

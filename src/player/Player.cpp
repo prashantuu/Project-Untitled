@@ -6,29 +6,36 @@ const float Player::SPEED = 200.f;
 const sf::Time Player::INVINCIBILITY_DURATION = sf::seconds(0.5f);
 
 Player::Player(ResourceManager& resources)
-    : m_sprite(resources.getTexture("assets/sprites/player/player.png"))
+    : m_sprite(resources.getTexture("assets/sprites/player/player_spritesheet.png"))
     , m_weapon(resources)
+    // NOTE: adjust frame size/count/row to match your actual downloaded
+    // sheet. Assumes 32x32 frames, idle on row 0 (4 frames), walk on
+    // row 1 (6 frames) — a common layout for Kenney character sheets.
+    , m_idleAnimation({32, 32}, 4, 0, sf::seconds(0.15f), true)
+    , m_walkAnimation({32, 32}, 6, 1, sf::seconds(0.1f), true)
+    , m_currentAnimation(&m_idleAnimation)
     , m_currentHealth(100)
     , m_maxHealth(100)
     , m_isInvincible(false)
     , m_invincibilityTimer(sf::Time::Zero)
 {
-    sf::Vector2u size = m_sprite.getTexture().getSize();
-    m_sprite.setOrigin({size.x / 2.f, size.y / 2.f});
+    m_sprite.setTextureRect(m_currentAnimation->getCurrentFrameRect());
+    m_sprite.setOrigin({16.f, 16.f});
 
     m_sprite.setPosition({400.f, 300.f}); // overridden by Game via setPosition()
 }
 
 void Player::update(sf::Time deltaTime, const sf::RenderWindow& window)
 {
-    handleMovement(deltaTime);
+    bool isMoving = handleMovement(deltaTime);
     handleRotation(window);
     updateInvincibility(deltaTime);
+    updateAnimation(deltaTime, isMoving);
 
     m_weapon.update(deltaTime, m_sprite.getPosition(), m_sprite.getRotation());
 }
 
-void Player::handleMovement(sf::Time deltaTime)
+bool Player::handleMovement(sf::Time deltaTime)
 {
     sf::Vector2f movement(0.f, 0.f);
 
@@ -41,7 +48,11 @@ void Player::handleMovement(sf::Time deltaTime)
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D))
         movement.x += SPEED;
 
+    bool isMoving = (movement.x != 0.f || movement.y != 0.f);
+
     m_sprite.move(movement * deltaTime.asSeconds());
+
+    return isMoving;
 }
 
 void Player::handleRotation(const sf::RenderWindow& window)
@@ -68,6 +79,23 @@ void Player::updateInvincibility(sf::Time deltaTime)
         m_isInvincible = false;
         m_invincibilityTimer = sf::Time::Zero;
     }
+}
+
+void Player::updateAnimation(sf::Time deltaTime, bool isMoving)
+{
+    Animation* targetAnimation = isMoving ? &m_walkAnimation : &m_idleAnimation;
+
+    // Only reset when actually SWITCHING states — resetting every
+    // frame would restart the animation from frame 0 constantly,
+    // which looks like it's not animating at all.
+    if (targetAnimation != m_currentAnimation)
+    {
+        m_currentAnimation = targetAnimation;
+        m_currentAnimation->reset();
+    }
+
+    m_currentAnimation->update(deltaTime);
+    m_sprite.setTextureRect(m_currentAnimation->getCurrentFrameRect());
 }
 
 void Player::draw(sf::RenderWindow& window)

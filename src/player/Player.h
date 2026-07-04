@@ -3,6 +3,7 @@
 #include <SFML/Graphics.hpp>
 #include "weapon/Weapon.h"
 #include "resource/ResourceManager.h"
+#include "graphics/Animation.h"
 
 class Player
 {
@@ -27,13 +28,18 @@ public:
     bool isAlive() const;
 
 private:
-    void handleMovement(sf::Time deltaTime);
+    bool handleMovement(sf::Time deltaTime);
     void handleRotation(const sf::RenderWindow& window);
     void updateInvincibility(sf::Time deltaTime);
+    void updateAnimation(sf::Time deltaTime, bool isMoving);
 
 private:
     sf::Sprite m_sprite;
     Weapon m_weapon;
+
+    Animation m_idleAnimation;
+    Animation m_walkAnimation;
+    Animation* m_currentAnimation;
 
     int m_currentHealth;
     int m_maxHealth;

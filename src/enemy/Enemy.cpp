@@ -3,39 +3,45 @@
 
 const float Enemy::SPEED = 100.f;
 
-Enemy::Enemy(sf::Vector2f spawnPosition)
-    : m_shape({30.f, 30.f})
+Enemy::Enemy(sf::Texture& texture, sf::Vector2f spawnPosition)
+    : m_sprite(texture)
+    // NOTE: adjust to match your actual downloaded enemy sheet.
+    // Assumes 32x32 frames, 4-frame walk cycle on row 0.
+    , m_walkAnimation({32, 32}, 4, 0, sf::seconds(0.15f), true)
 {
-    m_shape.setOrigin({15.f, 15.f});
-    m_shape.setFillColor(sf::Color::Red);
-    m_shape.setPosition(spawnPosition);
+    m_sprite.setTextureRect(m_walkAnimation.getCurrentFrameRect());
+    m_sprite.setOrigin({16.f, 16.f});
+    m_sprite.setPosition(spawnPosition);
 }
 
-void Enemy::update(sf::Time deltaTime, sf::Vector2f playerPosition)
+void Enemy::update(sf::Time deltaTime, sf::Vector2f targetPosition)
 {
-    // Direction = Player Position - Enemy Position
-    sf::Vector2f direction = playerPosition - m_shape.getPosition();
+    handleMovement(deltaTime, targetPosition);
 
-    // Magnitude (length) of the direction vector.
+    m_walkAnimation.update(deltaTime);
+    m_sprite.setTextureRect(m_walkAnimation.getCurrentFrameRect());
+}
+
+void Enemy::handleMovement(sf::Time deltaTime, sf::Vector2f targetPosition)
+{
+    sf::Vector2f direction = targetPosition - m_sprite.getPosition();
+
     float length = std::sqrt(direction.x * direction.x + direction.y * direction.y);
 
-    // Normalize so the enemy always moves at a constant SPEED,
-    // regardless of how far away the player is. Guard against
-    // dividing by zero if the enemy is exactly on the player.
     if (length != 0.f)
     {
         direction /= length;
     }
 
-    m_shape.move(direction * SPEED * deltaTime.asSeconds());
+    m_sprite.move(direction * SPEED * deltaTime.asSeconds());
 }
 
 void Enemy::draw(sf::RenderWindow& window)
 {
-    window.draw(m_shape);
+    window.draw(m_sprite);
 }
 
 sf::FloatRect Enemy::getBounds() const
 {
-    return m_shape.getGlobalBounds();
+    return m_sprite.getGlobalBounds();
 }
