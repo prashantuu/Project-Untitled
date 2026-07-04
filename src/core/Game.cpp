@@ -5,51 +5,55 @@ namespace
     std::vector<std::string> createLevelLayout()
     {
         return {
-            "#########################",
-            "#.......................#",
-            "#.......................#",
-            "#.......................#",
-            "#.......................#",
-            "#....#####..#...........#",
-            "#...........#...........#",
-            "#...........#...........#",
-            "#...........#...........#",
-            "#...........#...........#",
-            "#......#................#",
-            "#......#................#",
-            "#......#................#",
-            "#......#................#",
-            "#......#.......#####....#",
-            "#.......................#",
-            "#.......................#",
-            "#.......................#",
-            "#.......................#",
-            "#########################",
+            "##############################",
+            "#............................#",
+            "#............................#",
+            "#............................#",
+            "#............................#",
+            "#....######...#..............#",
+            "#.............#..............#",
+            "#.............#..............#",
+            "#.............#.....######...#",
+            "#.............#..............#",
+            "#.............#..............#",
+            "#............................#",
+            "#.......#....................#",
+            "#.......#....................#",
+            "#.......#....................#",
+            "#.......#....................#",
+            "#.......#.........######.....#",
+            "#.......#....................#",
+            "#............................#",
+            "#............................#",
+            "#............................#",
+            "#............................#",
+            "#............................#",
+            "##############################",
         };
     }
 }
 
 Game::Game()
     : m_window(sf::VideoMode({800, 600}), "TopDownShooter")
-    , m_tileMap(createLevelLayout(), 80.f)
+    , m_tileMap(createLevelLayout(), 80.f, m_resources)
     , m_worldSize(m_tileMap.getWorldSize())
-    , m_enemyManager(m_worldSize)
+    , m_player(m_resources)
+    , m_enemyManager(m_worldSize, m_resources)
     , m_camera({800.f, 600.f})
+    , m_audioManager(m_resources)
     , m_gameOver(false)
+    , m_font(m_resources.getFont("assets/fonts/game_font.ttf"))
     , m_gameOverText(m_font)
-    , m_hud(m_font)
+    , m_hud(m_resources)
 {
     m_window.setFramerateLimit(60);
 
-    // World size now comes from the actual map, not a hardcoded
-    // constant — one source of truth for both camera and player.
     m_camera.setWorldBounds(m_worldSize);
-
-    m_font.openFromFile("assets/fonts/arial.ttf");
+    m_player.setPosition(m_worldSize / 2.f);
 
     m_gameOverText.setString("GAME OVER");
     m_gameOverText.setCharacterSize(60);
-    m_gameOverText.setFillColor(sf::Color::White);
+    m_gameOverText.setFillColor(sf::Color(220, 60, 60));
 
     sf::FloatRect bounds = m_gameOverText.getLocalBounds();
     m_gameOverText.setOrigin({bounds.size.x / 2.f, bounds.size.y / 2.f});
@@ -101,7 +105,7 @@ void Game::update(sf::Time deltaTime)
     m_player.update(deltaTime, m_window);
     m_player.constrainToWorld(m_worldSize);
 
-    m_camera.follow(m_player.getPosition());
+    m_camera.follow(m_player.getPosition(), deltaTime);
 
     m_enemyManager.update(deltaTime, m_player.getPosition());
 
@@ -120,13 +124,13 @@ void Game::update(sf::Time deltaTime)
     {
         m_gameOver = true;
         m_audioManager.playGameOver();
-        m_audioManager.stopMusic(); // optional, per spec
+        m_audioManager.stopMusic();
     }
 }
 
 void Game::render()
 {
-    m_window.clear(sf::Color::Black);
+    m_window.clear(sf::Color(15, 15, 20));
 
     if (!m_gameOver)
     {
@@ -136,12 +140,7 @@ void Game::render()
         m_enemyManager.draw(m_window);
         m_player.draw(m_window);
 
-        // World rendering is done with the camera's view. UI
-        // rendering happens in screen space, so switch back to
-        // the window's default view before drawing the HUD —
-        // otherwise it would move/scroll along with the camera.
         m_window.setView(m_window.getDefaultView());
-
         m_hud.draw(m_window, m_player.getHealth(), m_player.getMaxHealth(),
             m_enemyManager.getEnemyCount());
     }

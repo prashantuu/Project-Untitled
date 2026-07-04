@@ -1,11 +1,13 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include "resource/ResourceManager.h"
 #include "player/Player.h"
 #include "enemy/EnemyManager.h"
 #include "graphics/Camera.h"
 #include "world/TileMap.h"
 #include "ui/HUD.h"
+#include "audio/AudioManager.h"
 
 class Game
 {
@@ -20,6 +22,10 @@ private:
     void render();
 
 private:
+    // Declared first: everything below constructs itself by asking
+    // this for resources, so it must exist before them.
+    ResourceManager m_resources;
+
     sf::RenderWindow m_window;
 
     TileMap m_tileMap;
@@ -28,10 +34,11 @@ private:
     Player m_player;
     EnemyManager m_enemyManager;
     Camera m_camera;
+    AudioManager m_audioManager;
 
     bool m_gameOver;
 
-    sf::Font m_font;
+    sf::Font& m_font;
     sf::Text m_gameOverText;
     HUD m_hud;
 };

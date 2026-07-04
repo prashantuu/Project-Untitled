@@ -2,18 +2,13 @@
 
 const float TileMap::SOURCE_TILE_SIZE = 32.f;
 
-TileMap::TileMap(const std::vector<std::string>& layout, float tileSize)
+TileMap::TileMap(const std::vector<std::string>& layout, float tileSize, ResourceManager& resources)
     : m_tileSize(tileSize)
     , m_columns(layout.empty() ? 0 : static_cast<int>(layout[0].size()))
     , m_rows(static_cast<int>(layout.size()))
+    , m_tilesetTexture(resources.getTexture("assets/sprites/tiles/tileset.png"))
     , m_tileSprite(m_tilesetTexture)
 {
-    // NOTE: replace with your actual downloaded tileset. This assumes
-    // a simple horizontal strip: tile 0 = floor, tile 1 = wall, each
-    // SOURCE_TILE_SIZE x SOURCE_TILE_SIZE pixels. Adjust the indices
-    // and getTextureRect() below to match your real tileset layout.
-    m_tilesetTexture.loadFromFile("assets/sprites/tiles/tileset.png");
-
     float scale = m_tileSize / SOURCE_TILE_SIZE;
     m_tileSprite.setScale({scale, scale});
 

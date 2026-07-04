@@ -3,6 +3,7 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <string>
+#include "resource/ResourceManager.h"
 
 enum class TileType
 {
@@ -13,7 +14,7 @@ enum class TileType
 class TileMap
 {
 public:
-    TileMap(const std::vector<std::string>& layout, float tileSize);
+    TileMap(const std::vector<std::string>& layout, float tileSize, ResourceManager& resources);
 
     void draw(sf::RenderWindow& window);
 
@@ -26,14 +27,8 @@ private:
     int m_columns;
     int m_rows;
 
-    // Only one TileMap ever exists (owned directly by Game, never
-    // stored in a container), so it's safe for it to own its own
-    // texture — no reallocation risk like Enemy/Bullet have.
-    sf::Texture m_tilesetTexture;
+    sf::Texture& m_tilesetTexture;
     sf::Sprite m_tileSprite;
 
-    // Pixel size of a single tile *in the source tileset image*,
-    // before scaling up to m_tileSize. Adjust to match whatever
-    // tileset you download.
     static const float SOURCE_TILE_SIZE;
 };

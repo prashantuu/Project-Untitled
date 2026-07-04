@@ -1,19 +1,15 @@
 #include "ui/HUD.h"
 #include <string>
 
-HUD::HUD(sf::Font& font)
-    : m_heartIcon(m_heartTexture)
-    , m_healthText(font)
-    , m_enemyCountText(font)
+HUD::HUD(ResourceManager& resources)
+    : m_heartTexture(resources.getTexture("assets/sprites/ui/heart.png"))
+    , m_heartIcon(m_heartTexture)
+    , m_healthText(resources.getFont("assets/fonts/game_font.ttf"))
+    , m_enemyCountText(resources.getFont("assets/fonts/game_font.ttf"))
 {
-    // NOTE: replace with your actual downloaded heart/health icon.
-    m_heartTexture.loadFromFile("assets/sprites/ui/heart.png");
-
     sf::Vector2u size = m_heartTexture.getSize();
     if (size.x > 0)
     {
-        // Normalize whatever icon size you downloaded down to a
-        // consistent 32px HUD icon size.
         float scale = 32.f / static_cast<float>(size.x);
         m_heartIcon.setScale({scale, scale});
     }
@@ -21,7 +17,7 @@ HUD::HUD(sf::Font& font)
 
     m_healthText.setCharacterSize(26);
     m_healthText.setFillColor(sf::Color::White);
-    m_healthText.setPosition({60.f, 18.f}); // sits beside the heart icon
+    m_healthText.setPosition({60.f, 18.f});
 
     m_enemyCountText.setCharacterSize(22);
     m_enemyCountText.setFillColor(sf::Color(210, 210, 210));

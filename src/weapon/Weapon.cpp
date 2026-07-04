@@ -1,14 +1,11 @@
 #include "weapon/Weapon.h"
 #include <algorithm>
 
-Weapon::Weapon()
-    : m_sprite(m_texture)
+Weapon::Weapon(ResourceManager& resources)
+    : m_sprite(resources.getTexture("assets/sprites/weapon/gun.png"))
+    , m_bulletTexture(resources.getTexture("assets/sprites/bullet/bullet.png"))
 {
-    // NOTE: replace with your actual downloaded gun/bullet sprites.
-    m_texture.loadFromFile("assets/sprites/weapon/gun.png");
-    m_bulletTexture.loadFromFile("assets/sprites/bullet/bullet.png");
-
-    sf::Vector2u size = m_texture.getSize();
+    sf::Vector2u size = m_sprite.getTexture().getSize();
 
     // Origin at the left-center edge, not the middle — makes the
     // weapon pivot like it's held in a hand.
@@ -39,10 +36,8 @@ void Weapon::draw(sf::RenderWindow& window)
 
 void Weapon::shoot()
 {
-    sf::Vector2u size = m_texture.getSize();
+    sf::Vector2u size = m_sprite.getTexture().getSize();
 
-    // Spawn at the tip of the weapon sprite (its right edge),
-    // transformed into world space.
     sf::Vector2f spawnPosition = m_sprite.getTransform().transformPoint(
         { static_cast<float>(size.x), size.y / 2.f });
 

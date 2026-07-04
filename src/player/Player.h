@@ -2,11 +2,12 @@
 
 #include <SFML/Graphics.hpp>
 #include "weapon/Weapon.h"
+#include "resource/ResourceManager.h"
 
 class Player
 {
 public:
-    Player();
+    Player(ResourceManager& resources);
 
     void update(sf::Time deltaTime, const sf::RenderWindow& window);
     void draw(sf::RenderWindow& window);
@@ -31,7 +32,6 @@ private:
     void updateInvincibility(sf::Time deltaTime);
 
 private:
-    sf::Texture m_texture;
     sf::Sprite m_sprite;
     Weapon m_weapon;
 

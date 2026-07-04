@@ -1,17 +1,13 @@
 #include "audio/AudioManager.h"
 #include <algorithm>
 
-AudioManager::AudioManager()
+AudioManager::AudioManager(ResourceManager& resources)
+    : m_gunshotBuffer(resources.getSoundBuffer("assets/audio/sfx/gunshot.wav"))
+    , m_enemyDeathBuffer(resources.getSoundBuffer("assets/audio/sfx/enemy_death.wav"))
+    , m_playerHitBuffer(resources.getSoundBuffer("assets/audio/sfx/player_hit.wav"))
+    , m_gameOverBuffer(resources.getSoundBuffer("assets/audio/sfx/game_over.wav"))
+    , m_music(resources.getMusic("assets/audio/music/background.ogg"))
 {
-    // NOTE: replace these with your actual downloaded assets.
-    // If a file fails to load, that sound simply won't play —
-    // the rest of the game keeps working.
-    m_gunshotBuffer.loadFromFile("assets/audio/sfx/gunshot.wav");
-    m_enemyDeathBuffer.loadFromFile("assets/audio/sfx/enemy_death.wav");
-    m_playerHitBuffer.loadFromFile("assets/audio/sfx/player_hit.wav");
-    m_gameOverBuffer.loadFromFile("assets/audio/sfx/game_over.wav");
-
-    m_music.openFromFile("assets/audio/music/background.ogg");
     m_music.setLooping(true);
 }
 

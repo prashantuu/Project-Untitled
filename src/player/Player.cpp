@@ -5,17 +5,15 @@
 const float Player::SPEED = 200.f;
 const sf::Time Player::INVINCIBILITY_DURATION = sf::seconds(0.5f);
 
-Player::Player()
-    : m_sprite(m_texture)
+Player::Player(ResourceManager& resources)
+    : m_sprite(resources.getTexture("assets/sprites/player/player.png"))
+    , m_weapon(resources)
     , m_currentHealth(100)
     , m_maxHealth(100)
     , m_isInvincible(false)
     , m_invincibilityTimer(sf::Time::Zero)
 {
-    // NOTE: replace with your actual downloaded player sprite.
-    m_texture.loadFromFile("assets/sprites/player/player.png");
-
-    sf::Vector2u size = m_texture.getSize();
+    sf::Vector2u size = m_sprite.getTexture().getSize();
     m_sprite.setOrigin({size.x / 2.f, size.y / 2.f});
 
     m_sprite.setPosition({400.f, 300.f}); // overridden by Game via setPosition()
