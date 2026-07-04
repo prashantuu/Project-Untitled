@@ -1,10 +1,13 @@
 #include "player/Player.h"
 #include <cmath>
+#include <algorithm>
 
 const float Player::SPEED = 200.f;
 
 Player::Player()
     : m_shape({40.f, 20.f})
+    , m_currentHealth(100)
+    , m_maxHealth(100)
 {
     m_shape.setOrigin({20.f, 10.f});
 
@@ -61,6 +64,33 @@ void Player::shoot()
 
 bool Player::checkHit(const sf::FloatRect& targetBounds)
 {
-    // Player doesn't know about bullets — it just asks its weapon.
     return m_weapon.checkHit(targetBounds);
+}
+
+sf::Vector2f Player::getPosition() const
+{
+    return m_shape.getPosition();
+}
+
+sf::FloatRect Player::getBounds() const
+{
+    return m_shape.getGlobalBounds();
+}
+
+void Player::takeDamage(int amount)
+{
+    m_currentHealth -= amount;
+
+    // Health should never go below zero, so clamp it.
+    m_currentHealth = std::max(m_currentHealth, 0);
+}
+
+int Player::getHealth() const
+{
+    return m_currentHealth;
+}
+
+bool Player::isAlive() const
+{
+    return m_currentHealth > 0;
 }
