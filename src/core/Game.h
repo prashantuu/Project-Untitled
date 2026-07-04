@@ -3,6 +3,7 @@
 #include <SFML/Graphics.hpp>
 #include "player/Player.h"
 #include "enemy/EnemyManager.h"
+#include "graphics/Camera.h"
 
 class Game
 {
@@ -20,6 +21,7 @@ private:
     sf::RenderWindow m_window;
     Player m_player;
     EnemyManager m_enemyManager;
+    Camera m_camera;
 
     // Simple flag for now. We'll upgrade this to a proper
     // GameState enum once we have more than one non-playing state

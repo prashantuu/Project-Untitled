@@ -2,25 +2,20 @@
 
 Game::Game()
     : m_window(sf::VideoMode({800, 600}), "TopDownShooter")
+    , m_camera({800.f, 600.f})
     , m_gameOver(false)
     , m_gameOverText(m_font)
 {
     m_window.setFramerateLimit(60);
 
-    // NOTE: point this at an actual .ttf file in your project,
-    // e.g. assets/fonts/arial.ttf. If it fails to load, the text
-    // just won't render — the rest of the game still works fine.
     m_font.openFromFile("assets/fonts/arial.ttf");
 
     m_gameOverText.setString("GAME OVER");
     m_gameOverText.setCharacterSize(60);
     m_gameOverText.setFillColor(sf::Color::White);
 
-    // Center the text's origin so setPosition() centers it on screen,
-    // not its top-left corner.
     sf::FloatRect bounds = m_gameOverText.getLocalBounds();
     m_gameOverText.setOrigin({bounds.size.x / 2.f, bounds.size.y / 2.f});
-    m_gameOverText.setPosition({400.f, 300.f});
 }
 
 void Game::run()
@@ -62,6 +57,7 @@ void Game::update(sf::Time deltaTime)
         return;
 
     m_player.update(deltaTime, m_window);
+    m_camera.follow(m_player.getPosition());
 
     m_enemyManager.update(deltaTime, m_player.getPosition());
     m_enemyManager.checkCollisions(m_player);
@@ -79,11 +75,23 @@ void Game::render()
 
     if (!m_gameOver)
     {
+        // Everything drawn after this uses the camera's view —
+        // world positions, not fixed screen positions.
+        m_camera.apply(m_window);
+
         m_enemyManager.draw(m_window);
         m_player.draw(m_window);
     }
     else
     {
+        // Switch back to the window's default view so the
+        // Game Over text is fixed on screen, not affected by
+        // wherever the camera happened to be looking.
+        m_window.setView(m_window.getDefaultView());
+
+        m_gameOverText.setPosition(
+            { m_window.getSize().x / 2.f, m_window.getSize().y / 2.f });
+
         m_window.draw(m_gameOverText);
     }
 

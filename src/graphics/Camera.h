@@ -2,10 +2,17 @@
 
 #include <SFML/Graphics.hpp>
 
-// Placeholder for now — we'll implement this once we need
-// the view to follow the player / handle zoom, etc.
 class Camera
 {
 public:
-    Camera();
+    Camera(sf::Vector2f size);
+
+    // Camera only knows about positions — it has no idea
+    // what a Player, Enemy, or anything else is.
+    void follow(sf::Vector2f target);
+
+    void apply(sf::RenderWindow& window);
+
+private:
+    sf::View m_view;
 };

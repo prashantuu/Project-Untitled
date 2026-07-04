@@ -1,4 +1,7 @@
 #include "enemy/Enemy.h"
+#include <cmath>
+
+const float Enemy::SPEED = 100.f;
 
 Enemy::Enemy(sf::Vector2f spawnPosition)
     : m_shape({30.f, 30.f})
@@ -8,9 +11,23 @@ Enemy::Enemy(sf::Vector2f spawnPosition)
     m_shape.setPosition(spawnPosition);
 }
 
-void Enemy::update(sf::Time deltaTime)
+void Enemy::update(sf::Time deltaTime, sf::Vector2f playerPosition)
 {
-    // Still no behavior — chasing/AI comes later.
+    // Direction = Player Position - Enemy Position
+    sf::Vector2f direction = playerPosition - m_shape.getPosition();
+
+    // Magnitude (length) of the direction vector.
+    float length = std::sqrt(direction.x * direction.x + direction.y * direction.y);
+
+    // Normalize so the enemy always moves at a constant SPEED,
+    // regardless of how far away the player is. Guard against
+    // dividing by zero if the enemy is exactly on the player.
+    if (length != 0.f)
+    {
+        direction /= length;
+    }
+
+    m_shape.move(direction * SPEED * deltaTime.asSeconds());
 }
 
 void Enemy::draw(sf::RenderWindow& window)
