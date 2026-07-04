@@ -3,11 +3,11 @@
 
 EnemyManager::EnemyManager()
 {
-    // Spread across a much larger world now — you'll have to
-    // actually walk to find these instead of seeing them immediately.
-    spawnEnemy({1500.f, 800.f});
-    spawnEnemy({1800.f, 1200.f});
-    spawnEnemy({300.f, 1700.f});
+    // Spawn points chosen to land inside open floor tiles
+    // of the current level layout.
+    spawnEnemy({1600.f, 300.f});
+    spawnEnemy({1700.f, 900.f});
+    spawnEnemy({300.f, 1300.f});
 }
 
 void EnemyManager::update(sf::Time deltaTime, sf::Vector2f playerPosition)

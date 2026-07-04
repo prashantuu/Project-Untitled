@@ -17,6 +17,11 @@ public:
     sf::Vector2f getPosition() const;
     sf::FloatRect getBounds() const;
 
+    // Clamps the player's position inside the given world size.
+    // Player doesn't know or care what "the world" means beyond
+    // these numbers — that's Game's decision to make.
+    void constrainToWorld(sf::Vector2f worldSize);
+
     void takeDamage(int amount);
     int getHealth() const;
     bool isAlive() const;

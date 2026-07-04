@@ -95,6 +95,16 @@ sf::FloatRect Player::getBounds() const
     return m_shape.getGlobalBounds();
 }
 
+void Player::constrainToWorld(sf::Vector2f worldSize)
+{
+    sf::Vector2f position = m_shape.getPosition();
+
+    position.x = std::clamp(position.x, 0.f, worldSize.x);
+    position.y = std::clamp(position.y, 0.f, worldSize.y);
+
+    m_shape.setPosition(position);
+}
+
 void Player::takeDamage(int amount)
 {
     // EnemyManager doesn't need to know invincibility exists — it just

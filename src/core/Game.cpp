@@ -1,12 +1,47 @@
 #include "core/Game.h"
 
+namespace
+{
+    std::vector<std::string> createLevelLayout()
+    {
+        return {
+            "#########################",
+            "#.......................#",
+            "#.......................#",
+            "#.......................#",
+            "#.......................#",
+            "#....#####..#...........#",
+            "#...........#...........#",
+            "#...........#...........#",
+            "#...........#...........#",
+            "#...........#...........#",
+            "#......#................#",
+            "#......#................#",
+            "#......#................#",
+            "#......#................#",
+            "#......#.......#####....#",
+            "#.......................#",
+            "#.......................#",
+            "#.......................#",
+            "#.......................#",
+            "#########################",
+        };
+    }
+}
+
 Game::Game()
     : m_window(sf::VideoMode({800, 600}), "TopDownShooter")
+    , m_tileMap(createLevelLayout(), 80.f)
+    , m_worldSize(m_tileMap.getWorldSize())
     , m_camera({800.f, 600.f})
     , m_gameOver(false)
     , m_gameOverText(m_font)
 {
     m_window.setFramerateLimit(60);
+
+    // World size now comes from the actual map, not a hardcoded
+    // constant — one source of truth for both camera and player.
+    m_camera.setWorldBounds(m_worldSize);
 
     m_font.openFromFile("assets/fonts/arial.ttf");
 
@@ -57,6 +92,8 @@ void Game::update(sf::Time deltaTime)
         return;
 
     m_player.update(deltaTime, m_window);
+    m_player.constrainToWorld(m_worldSize);
+
     m_camera.follow(m_player.getPosition());
 
     m_enemyManager.update(deltaTime, m_player.getPosition());
@@ -75,18 +112,14 @@ void Game::render()
 
     if (!m_gameOver)
     {
-        // Everything drawn after this uses the camera's view —
-        // world positions, not fixed screen positions.
         m_camera.apply(m_window);
 
+        m_tileMap.draw(m_window);
         m_enemyManager.draw(m_window);
         m_player.draw(m_window);
     }
     else
     {
-        // Switch back to the window's default view so the
-        // Game Over text is fixed on screen, not affected by
-        // wherever the camera happened to be looking.
         m_window.setView(m_window.getDefaultView());
 
         m_gameOverText.setPosition(
