@@ -3,11 +3,14 @@
 #include <algorithm>
 
 const float Player::SPEED = 200.f;
+const sf::Time Player::INVINCIBILITY_DURATION = sf::seconds(0.5f);
 
 Player::Player()
     : m_shape({40.f, 20.f})
     , m_currentHealth(100)
     , m_maxHealth(100)
+    , m_isInvincible(false)
+    , m_invincibilityTimer(sf::Time::Zero)
 {
     m_shape.setOrigin({20.f, 10.f});
 
@@ -19,6 +22,7 @@ void Player::update(sf::Time deltaTime, const sf::RenderWindow& window)
 {
     handleMovement(deltaTime);
     handleRotation(window);
+    updateInvincibility(deltaTime);
 
     m_weapon.update(deltaTime, m_shape.getPosition(), m_shape.getRotation());
 }
@@ -51,6 +55,20 @@ void Player::handleRotation(const sf::RenderWindow& window)
     m_shape.setRotation(sf::radians(angleRadians));
 }
 
+void Player::updateInvincibility(sf::Time deltaTime)
+{
+    if (!m_isInvincible)
+        return;
+
+    m_invincibilityTimer += deltaTime;
+
+    if (m_invincibilityTimer >= INVINCIBILITY_DURATION)
+    {
+        m_isInvincible = false;
+        m_invincibilityTimer = sf::Time::Zero;
+    }
+}
+
 void Player::draw(sf::RenderWindow& window)
 {
     window.draw(m_shape);
@@ -79,10 +97,16 @@ sf::FloatRect Player::getBounds() const
 
 void Player::takeDamage(int amount)
 {
-    m_currentHealth -= amount;
+    // EnemyManager doesn't need to know invincibility exists — it just
+    // calls takeDamage(), and Player decides whether it actually applies.
+    if (m_isInvincible)
+        return;
 
-    // Health should never go below zero, so clamp it.
+    m_currentHealth -= amount;
     m_currentHealth = std::max(m_currentHealth, 0);
+
+    m_isInvincible = true;
+    m_invincibilityTimer = sf::Time::Zero;
 }
 
 int Player::getHealth() const
