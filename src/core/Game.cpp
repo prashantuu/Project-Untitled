@@ -122,6 +122,11 @@ void Game::update(sf::Time deltaTime)
         m_audioManager.playPlayerHit();
     }
 
+    if (m_enemyManager.checkEnemyBulletHits(m_player))
+    {
+        m_audioManager.playPlayerHit();
+    }
+
     if (!m_player.isAlive())
     {
         m_gameOver = true;
