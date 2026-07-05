@@ -39,6 +39,7 @@ Game::Game()
     , m_worldSize(m_tileMap.getWorldSize())
     , m_player(m_resources)
     , m_enemyManager(m_worldSize, m_resources)
+    , m_waveManager(m_enemyManager)
     , m_camera({800.f, 600.f})
     , m_audioManager(m_resources)
     , m_gameOver(false)
@@ -108,6 +109,7 @@ void Game::update(sf::Time deltaTime)
     m_camera.follow(m_player.getPosition(), deltaTime);
 
     m_enemyManager.update(deltaTime, m_player.getPosition());
+    m_waveManager.update(deltaTime);
 
     std::size_t enemiesDestroyed = m_enemyManager.checkCollisions(m_player);
     for (std::size_t i = 0; i < enemiesDestroyed; ++i)

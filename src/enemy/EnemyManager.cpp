@@ -2,40 +2,19 @@
 #include <algorithm>
 #include <ctime>
 
-const sf::Time EnemyManager::SPAWN_INTERVAL = sf::seconds(3.f);
-const std::size_t EnemyManager::MAX_ENEMIES = 10;
-
 EnemyManager::EnemyManager(sf::Vector2f worldSize, ResourceManager& resources)
     : m_enemyTexture(resources.getTexture("assets/sprites/enemy/enemy_spritesheet.png"))
     , m_worldSize(worldSize)
-    , m_spawnTimer(sf::Time::Zero)
     , m_randomEngine(static_cast<unsigned int>(std::time(nullptr)))
 {
-    spawnEnemy(getRandomSpawnPosition());
-    spawnEnemy(getRandomSpawnPosition());
+    // No longer spawns anything on its own — WaveManager decides
+    // when the first enemies appear.
 }
 
 void EnemyManager::update(sf::Time deltaTime, sf::Vector2f playerPosition)
 {
     for (auto& enemy : m_enemies)
         enemy.update(deltaTime, playerPosition);
-
-    updateSpawning(deltaTime);
-}
-
-void EnemyManager::updateSpawning(sf::Time deltaTime)
-{
-    m_spawnTimer += deltaTime;
-
-    if (m_spawnTimer >= SPAWN_INTERVAL)
-    {
-        m_spawnTimer = sf::Time::Zero;
-
-        if (m_enemies.size() < MAX_ENEMIES)
-        {
-            spawnEnemy(getRandomSpawnPosition());
-        }
-    }
 }
 
 sf::Vector2f EnemyManager::getRandomSpawnPosition()
@@ -55,6 +34,11 @@ void EnemyManager::draw(sf::RenderWindow& window)
 void EnemyManager::spawnEnemy(sf::Vector2f position)
 {
     m_enemies.emplace_back(m_enemyTexture, position);
+}
+
+void EnemyManager::spawnRandomEnemy()
+{
+    spawnEnemy(getRandomSpawnPosition());
 }
 
 std::size_t EnemyManager::checkCollisions(Player& player)

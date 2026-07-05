@@ -8,6 +8,7 @@
 #include "world/TileMap.h"
 #include "ui/HUD.h"
 #include "audio/AudioManager.h"
+#include "gameplay/WaveManager.h"
 
 class Game
 {
@@ -33,6 +34,7 @@ private:
 
     Player m_player;
     EnemyManager m_enemyManager;
+    WaveManager m_waveManager;
     Camera m_camera;
     AudioManager m_audioManager;
 
