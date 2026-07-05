@@ -7,6 +7,7 @@ HUD::HUD(ResourceManager& resources)
     , m_healthText(resources.getFont("assets/fonts/game_font.ttf"))
     , m_enemyCountText(resources.getFont("assets/fonts/game_font.ttf"))
     , m_ammoText(resources.getFont("assets/fonts/game_font.ttf"))
+    , m_scoreText(resources.getFont("assets/fonts/game_font.ttf"))
 {
     sf::Vector2u size = m_heartTexture.getSize();
     if (size.x > 0)
@@ -27,10 +28,14 @@ HUD::HUD(ResourceManager& resources)
     m_ammoText.setCharacterSize(22);
     m_ammoText.setFillColor(sf::Color(230, 230, 150));
     m_ammoText.setPosition({20.f, 90.f});
+
+    m_scoreText.setCharacterSize(22);
+    m_scoreText.setFillColor(sf::Color(255, 215, 0));
+    m_scoreText.setPosition({20.f, 120.f});
 }
 
 void HUD::draw(sf::RenderWindow& window, int health, int maxHealth, std::size_t enemyCount,
-    int currentAmmo, int magazineSize, bool isReloading)
+    int currentAmmo, int magazineSize, bool isReloading, int score)
 {
     m_healthText.setString(std::to_string(health) + " / " + std::to_string(maxHealth));
     m_enemyCountText.setString("Enemies remaining: " + std::to_string(enemyCount));
@@ -47,5 +52,8 @@ void HUD::draw(sf::RenderWindow& window, int health, int maxHealth, std::size_t 
     window.draw(m_heartIcon);
     window.draw(m_healthText);
     window.draw(m_enemyCountText);
+    m_scoreText.setString("Score: " + std::to_string(score));
+
     window.draw(m_ammoText);
+    window.draw(m_scoreText);
 }

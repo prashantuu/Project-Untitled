@@ -161,6 +161,24 @@ void Weapon::reload()
     m_reloadTimer = sf::Time::Zero;
 }
 
+void Weapon::refillAmmo()
+{
+    m_currentAmmo = m_magazineSize;
+    m_isReloading = false;
+    m_reloadTimer = sf::Time::Zero;
+}
+
+WeaponType Weapon::getType() const
+{
+    return m_type;
+}
+
+void Weapon::setType(WeaponType type)
+{
+    m_type = type;
+    applyStatsForType();
+}
+
 bool Weapon::isAutomatic() const
 {
     return m_isAutomatic;
@@ -179,11 +197,6 @@ int Weapon::getMagazineSize() const
 bool Weapon::isReloading() const
 {
     return m_isReloading;
-}
-
-void Weapon::addAmmo(int amount)
-{
-    m_currentAmmo = std::min(m_currentAmmo + amount, m_magazineSize);
 }
 
 int Weapon::checkHit(const sf::FloatRect& targetBounds)

@@ -10,6 +10,7 @@ EnemyManager::EnemyManager(sf::Vector2f worldSize, ResourceManager& resources)
     : m_fastTexture(resources.getTexture("assets/sprites/enemy/fast_spritesheet.png"))
     , m_heavyTexture(resources.getTexture("assets/sprites/enemy/heavy_spritesheet.png"))
     , m_shooterTexture(resources.getTexture("assets/sprites/enemy/shooter_spritesheet.png"))
+    , m_bossTexture(resources.getTexture("assets/sprites/enemy/boss_spritesheet.png"))
     , m_enemyBulletTexture(resources.getTexture("assets/sprites/bullet/bullet.png"))
     , m_worldSize(worldSize)
     , m_randomEngine(static_cast<unsigned int>(std::time(nullptr)))
@@ -40,6 +41,18 @@ void EnemyManager::update(sf::Time deltaTime, sf::Vector2f playerPosition)
             float angle = std::atan2(direction.y, direction.x);
 
             m_enemyBullets.emplace_back(m_enemyBulletTexture, enemy.getPosition(), sf::radians(angle), ENEMY_BULLET_DAMAGE);
+        }
+    }
+
+    if (m_boss)
+    {
+        m_boss->update(deltaTime, playerPosition);
+
+        if (m_boss->tryShoot(playerPosition))
+        {
+            sf::Vector2f direction = playerPosition - m_boss->getPosition();
+            float angle = std::atan2(direction.y, direction.x);
+            m_enemyBullets.emplace_back(m_enemyBulletTexture, m_boss->getPosition(), sf::radians(angle), ENEMY_BULLET_DAMAGE * 2);
         }
     }
 
@@ -77,6 +90,9 @@ void EnemyManager::draw(sf::RenderWindow& window)
     for (auto& enemy : m_enemies)
         enemy.draw(window);
 
+    if (m_boss)
+        m_boss->draw(window);
+
     for (auto& bullet : m_enemyBullets)
         bullet.draw(window);
 }
@@ -94,6 +110,16 @@ void EnemyManager::spawnRandomEnemy()
 std::size_t EnemyManager::checkCollisions(Player& player)
 {
     std::size_t destroyedCount = 0;
+
+    if (m_boss)
+    {
+        int damage = player.checkHit(m_boss->getBounds());
+        if (damage > 0 && m_boss->takeDamage(damage))
+        {
+            m_boss.reset();
+            destroyedCount++;
+        }
+    }
 
     for (auto it = m_enemies.begin(); it != m_enemies.end();)
     {
@@ -122,6 +148,12 @@ std::size_t EnemyManager::checkCollisions(Player& player)
 bool EnemyManager::checkPlayerCollision(Player& player)
 {
     bool playerWasHit = false;
+
+    if (m_boss && m_boss->getBounds().findIntersection(player.getBounds()))
+    {
+        if (player.takeDamage(MELEE_DAMAGE * 2)) // boss hits harder
+            playerWasHit = true;
+    }
 
     for (auto& enemy : m_enemies)
     {
@@ -163,4 +195,21 @@ bool EnemyManager::checkEnemyBulletHits(Player& player)
 std::size_t EnemyManager::getEnemyCount() const
 {
     return m_enemies.size();
+}
+
+void EnemyManager::reset()
+{
+    m_enemies.clear();
+    m_enemyBullets.clear();
+    m_boss.reset();
+}
+
+void EnemyManager::spawnBoss(sf::Vector2f position)
+{
+    m_boss.emplace(m_bossTexture, position);
+}
+
+bool EnemyManager::hasBoss() const
+{
+    return m_boss.has_value();
 }

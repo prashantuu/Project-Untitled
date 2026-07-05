@@ -16,6 +16,7 @@ Player::Player(ResourceManager& resources)
     , m_currentAnimation(&m_idleAnimation)
     , m_currentHealth(100)
     , m_maxHealth(100)
+    , m_score(0)
     , m_isInvincible(false)
     , m_invincibilityTimer(sf::Time::Zero)
 {
@@ -154,6 +155,16 @@ void Player::setPosition(sf::Vector2f position)
     m_sprite.setPosition(position);
 }
 
+void Player::reset(sf::Vector2f spawnPosition)
+{
+    m_currentHealth = m_maxHealth;
+    m_score = 0;
+    m_isInvincible = false;
+    m_invincibilityTimer = sf::Time::Zero;
+    m_weapon.refillAmmo();
+    setPosition(spawnPosition);
+}
+
 void Player::constrainToWorld(sf::Vector2f worldSize)
 {
     sf::Vector2f position = m_sprite.getPosition();
@@ -178,6 +189,11 @@ bool Player::takeDamage(int amount)
     return true;
 }
 
+void Player::heal(int amount)
+{
+    m_currentHealth = std::min(m_currentHealth + amount, m_maxHealth);
+}
+
 int Player::getHealth() const
 {
     return m_currentHealth;
@@ -193,13 +209,37 @@ bool Player::isAlive() const
     return m_currentHealth > 0;
 }
 
-void Player::heal(int amount)
+void Player::refillAmmo()
 {
-    m_currentHealth += amount;
-    m_currentHealth = std::min(m_currentHealth, m_maxHealth);
+    m_weapon.refillAmmo();
 }
 
-void Player::addAmmo(int amount)
+void Player::addScore(int amount)
 {
-    m_weapon.addAmmo(amount);
+    m_score += amount;
+}
+
+int Player::getScore() const
+{
+    return m_score;
+}
+
+void Player::setHealth(int health)
+{
+    m_currentHealth = std::clamp(health, 0, m_maxHealth);
+}
+
+void Player::setScore(int score)
+{
+    m_score = score;
+}
+
+WeaponType Player::getWeaponType() const
+{
+    return m_weapon.getType();
+}
+
+void Player::setWeaponType(WeaponType type)
+{
+    m_weapon.setType(type);
 }

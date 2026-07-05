@@ -2,7 +2,7 @@
 
 #include <SFML/Graphics.hpp>
 #include "weapon/Weapon.h"
-#include "resources/ResourceManager.h"
+#include "resource/ResourceManager.h"
 #include "graphics/Animation.h"
 
 class Player
@@ -28,21 +28,25 @@ public:
     sf::Vector2f getPosition() const;
     sf::FloatRect getBounds() const;
     void setPosition(sf::Vector2f position);
+    void reset(sf::Vector2f spawnPosition);
 
     void constrainToWorld(sf::Vector2f worldSize);
 
     bool takeDamage(int amount);
+    void heal(int amount);
     int getHealth() const;
     int getMaxHealth() const;
     bool isAlive() const;
 
-    // Restores health, clamped at m_maxHealth — mirrors how takeDamage()
-    // clamps at 0. Used by PickupManager when a Health pickup is collected.
-    void heal(int amount);
+    void refillAmmo();
+    void addScore(int amount);
+    int getScore() const;
 
-    // Forwards to Weapon — Player still doesn't know how ammo is stored,
-    // it just passes the request down, same as shoot()/reload().
-    void addAmmo(int amount);
+    // Used by SaveManager on load.
+    void setHealth(int health);
+    void setScore(int score);
+    WeaponType getWeaponType() const;
+    void setWeaponType(WeaponType type);
 
 private:
     bool handleMovement(sf::Time deltaTime);
@@ -60,6 +64,7 @@ private:
 
     int m_currentHealth;
     int m_maxHealth;
+    int m_score;
 
     bool m_isInvincible;
     sf::Time m_invincibilityTimer;

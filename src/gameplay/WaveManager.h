@@ -11,6 +11,8 @@ public:
     void update(sf::Time deltaTime);
 
     int getCurrentWave() const;
+    void reset();
+    void setWave(int waveNumber); // used by SaveManager on load
 
 private:
     void startWave(int waveNumber);

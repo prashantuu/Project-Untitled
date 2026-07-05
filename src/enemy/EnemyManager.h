@@ -3,9 +3,11 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <random>
+#include <optional>
 #include "enemy/Enemy.h"
 #include "player/Player.h"
 #include "bullet/Bullet.h"
+#include "enemy/Boss.h"
 #include "resource/ResourceManager.h"
 
 class EnemyManager
@@ -22,7 +24,11 @@ public:
     // Player's bullets vs enemies — now applies damage instead of
     // an automatic one-hit kill, since Heavy enemies need to survive
     // multiple hits.
-    std::size_t checkCollisions(Player& player);
+    // Returns the WORLD POSITION of each enemy destroyed this
+    // frame (empty if none) — lets Game spawn blood particles
+    // and play death sounds at the right spots, without
+    // EnemyManager needing to know particles or audio exist.
+    std::vector<sf::Vector2f> checkCollisions(Player& player);
 
     // Enemy bodies touching the player (melee).
     bool checkPlayerCollision(Player& player);
@@ -31,6 +37,10 @@ public:
     bool checkEnemyBulletHits(Player& player);
 
     std::size_t getEnemyCount() const;
+    void reset();
+
+    void spawnBoss(sf::Vector2f position);
+    bool hasBoss() const;
 
 private:
     sf::Vector2f getRandomSpawnPosition();
@@ -49,6 +59,9 @@ private:
     // class), but this is a completely separate pool — enemy
     // bullets shouldn't be checked against enemies, and player
     // bullets shouldn't be checked against the player.
+    sf::Texture& m_bossTexture;
+    std::optional<Boss> m_boss;
+
     sf::Texture& m_enemyBulletTexture;
     std::vector<Bullet> m_enemyBullets;
 
