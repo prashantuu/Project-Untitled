@@ -1,7 +1,7 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
-#include "resource/ResourceManager.h"
+#include "resources/ResourceManager.h"
 #include "player/Player.h"
 #include "enemy/EnemyManager.h"
 #include "graphics/Camera.h"
@@ -9,6 +9,7 @@
 #include "ui/HUD.h"
 #include "audio/AudioManager.h"
 #include "gameplay/WaveManager.h"
+#include "pickup/PickupManager.h"
 
 class Game
 {
@@ -37,9 +38,15 @@ private:
     WaveManager m_waveManager;
     Camera m_camera;
     AudioManager m_audioManager;
+    PickupManager m_pickupManager;
 
     bool m_gameOver;
     bool m_wasTriggerHeldLastFrame;
+
+    // Score is a Game-level concept — coins have no meaning inside
+    // Player, so PickupManager reports coin values upward and Game
+    // is the one that decides they add up to a "score".
+    int m_score;
 
     sf::Font& m_font;
     sf::Text m_gameOverText;

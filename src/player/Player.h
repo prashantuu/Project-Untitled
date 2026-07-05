@@ -2,7 +2,7 @@
 
 #include <SFML/Graphics.hpp>
 #include "weapon/Weapon.h"
-#include "resource/ResourceManager.h"
+#include "resources/ResourceManager.h"
 #include "graphics/Animation.h"
 
 class Player
@@ -35,6 +35,14 @@ public:
     int getHealth() const;
     int getMaxHealth() const;
     bool isAlive() const;
+
+    // Restores health, clamped at m_maxHealth — mirrors how takeDamage()
+    // clamps at 0. Used by PickupManager when a Health pickup is collected.
+    void heal(int amount);
+
+    // Forwards to Weapon — Player still doesn't know how ammo is stored,
+    // it just passes the request down, same as shoot()/reload().
+    void addAmmo(int amount);
 
 private:
     bool handleMovement(sf::Time deltaTime);

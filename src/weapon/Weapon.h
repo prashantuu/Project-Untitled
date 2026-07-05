@@ -4,7 +4,7 @@
 #include <vector>
 #include <random>
 #include "bullet/Bullet.h"
-#include "resource/ResourceManager.h"
+#include "resources/ResourceManager.h"
 
 enum class WeaponType
 {
@@ -34,6 +34,15 @@ public:
     int getCurrentAmmo() const;
     int getMagazineSize() const;
     bool isReloading() const;
+
+    // Adds ammo directly into the current magazine, clamped at
+    // m_magazineSize. NOTE: this project has no separate "reserve
+    // ammo" pool — reload() already refills fully from an implicit
+    // infinite reserve — so an Ammo pickup's only meaningful effect
+    // is topping up the magazine mid-fight without waiting out the
+    // reload timer. If you later add a real reserve system, this is
+    // the method to revisit.
+    void addAmmo(int amount);
 
     // Returns damage dealt if a bullet hit targetBounds, 0 otherwise.
     int checkHit(const sf::FloatRect& targetBounds);

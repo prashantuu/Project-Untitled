@@ -42,8 +42,10 @@ Game::Game()
     , m_waveManager(m_enemyManager)
     , m_camera({800.f, 600.f})
     , m_audioManager(m_resources)
+    , m_pickupManager(m_resources, m_worldSize)
     , m_gameOver(false)
     , m_wasTriggerHeldLastFrame(false)
+    , m_score(0)
     , m_font(m_resources.getFont("assets/fonts/game_font.ttf"))
     , m_gameOverText(m_font)
     , m_hud(m_resources)
@@ -144,6 +146,21 @@ void Game::update(sf::Time deltaTime)
         m_audioManager.playPlayerHit();
     }
 
+    m_pickupManager.update(deltaTime);
+    PickupCollectionReport pickupReport = m_pickupManager.checkCollisions(m_player);
+
+    if (pickupReport.coinsCollected > 0)
+    {
+        m_score += pickupReport.coinsCollected;
+    }
+    // Health/ammo pickups already applied themselves via player.heal()/
+    // addAmmo() inside PickupManager::checkCollisions() — Game only
+    // reacts to the parts it actually owns (score, sound).
+    if (pickupReport.healthCollected || pickupReport.ammoCollected)
+    {
+        m_audioManager.playGunshot(); // TODO: replace with a dedicated playPickup() once you add that SFX
+    }
+
     if (!m_player.isAlive())
     {
         m_gameOver = true;
@@ -161,6 +178,7 @@ void Game::render()
         m_camera.apply(m_window);
 
         m_tileMap.draw(m_window);
+        m_pickupManager.draw(m_window);
         m_enemyManager.draw(m_window);
         m_player.draw(m_window);
 

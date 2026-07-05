@@ -192,3 +192,14 @@ bool Player::isAlive() const
 {
     return m_currentHealth > 0;
 }
+
+void Player::heal(int amount)
+{
+    m_currentHealth += amount;
+    m_currentHealth = std::min(m_currentHealth, m_maxHealth);
+}
+
+void Player::addAmmo(int amount)
+{
+    m_weapon.addAmmo(amount);
+}

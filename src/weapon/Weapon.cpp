@@ -181,6 +181,11 @@ bool Weapon::isReloading() const
     return m_isReloading;
 }
 
+void Weapon::addAmmo(int amount)
+{
+    m_currentAmmo = std::min(m_currentAmmo + amount, m_magazineSize);
+}
+
 int Weapon::checkHit(const sf::FloatRect& targetBounds)
 {
     for (auto it = m_bullets.begin(); it != m_bullets.end(); ++it)
