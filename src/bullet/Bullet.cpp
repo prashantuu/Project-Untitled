@@ -4,9 +4,10 @@
 const float Bullet::SPEED = 600.f;
 const sf::Time Bullet::MAX_LIFETIME = sf::seconds(2.f);
 
-Bullet::Bullet(sf::Texture& texture, sf::Vector2f position, sf::Angle direction)
+Bullet::Bullet(sf::Texture& texture, sf::Vector2f position, sf::Angle direction, int damage)
     : m_sprite(texture)
     , m_lifetime(sf::Time::Zero)
+    , m_damage(damage)
 {
     sf::Vector2u size = texture.getSize();
     m_sprite.setOrigin({size.x / 2.f, size.y / 2.f});
@@ -37,4 +38,9 @@ bool Bullet::isAlive() const
 sf::FloatRect Bullet::getBounds() const
 {
     return m_sprite.getGlobalBounds();
+}
+
+int Bullet::getDamage() const
+{
+    return m_damage;
 }

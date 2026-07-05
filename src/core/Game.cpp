@@ -43,6 +43,7 @@ Game::Game()
     , m_camera({800.f, 600.f})
     , m_audioManager(m_resources)
     , m_gameOver(false)
+    , m_wasTriggerHeldLastFrame(false)
     , m_font(m_resources.getFont("assets/fonts/game_font.ttf"))
     , m_gameOverText(m_font)
     , m_hud(m_resources)
@@ -85,12 +86,11 @@ void Game::processEvents()
             m_window.close();
         }
 
-        if (const auto* mouseButton = event->getIf<sf::Event::MouseButtonPressed>())
+        if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
         {
-            if (!m_gameOver && mouseButton->button == sf::Mouse::Button::Left)
+            if (!m_gameOver && keyPressed->code == sf::Keyboard::Key::R)
             {
-                m_player.shoot();
-                m_audioManager.playGunshot();
+                m_player.reload();
             }
         }
     }
@@ -105,6 +105,23 @@ void Game::update(sf::Time deltaTime)
 
     m_player.update(deltaTime, m_window);
     m_player.constrainToWorld(m_worldSize);
+
+    // Semi-auto weapons (Pistol, Shotgun) fire only on the frame the
+    // trigger transitions from not-held to held. Automatic weapons
+    // (Rifle, SMG) fire every frame it's held, naturally rate-limited
+    // by Weapon::shoot()'s own fire-rate check.
+    bool triggerHeld = sf::Mouse::isButtonPressed(sf::Mouse::Button::Left);
+    bool justPressed = triggerHeld && !m_wasTriggerHeldLastFrame;
+
+    if (triggerHeld && (m_player.isWeaponAutomatic() || justPressed))
+    {
+        if (m_player.shoot())
+        {
+            m_audioManager.playGunshot();
+        }
+    }
+
+    m_wasTriggerHeldLastFrame = triggerHeld;
 
     m_camera.follow(m_player.getPosition(), deltaTime);
 
@@ -149,7 +166,8 @@ void Game::render()
 
         m_window.setView(m_window.getDefaultView());
         m_hud.draw(m_window, m_player.getHealth(), m_player.getMaxHealth(),
-            m_enemyManager.getEnemyCount());
+            m_enemyManager.getEnemyCount(), m_player.getAmmo(), m_player.getMagazineSize(),
+            m_player.isReloading());
     }
     else
     {

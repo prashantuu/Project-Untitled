@@ -39,6 +39,7 @@ private:
     AudioManager m_audioManager;
 
     bool m_gameOver;
+    bool m_wasTriggerHeldLastFrame;
 
     sf::Font& m_font;
     sf::Text m_gameOverText;

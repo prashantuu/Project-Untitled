@@ -104,12 +104,37 @@ void Player::draw(sf::RenderWindow& window)
     m_weapon.draw(window);
 }
 
-void Player::shoot()
+bool Player::shoot()
 {
-    m_weapon.shoot();
+    return m_weapon.shoot();
 }
 
-bool Player::checkHit(const sf::FloatRect& targetBounds)
+void Player::reload()
+{
+    m_weapon.reload();
+}
+
+bool Player::isWeaponAutomatic() const
+{
+    return m_weapon.isAutomatic();
+}
+
+int Player::getAmmo() const
+{
+    return m_weapon.getCurrentAmmo();
+}
+
+int Player::getMagazineSize() const
+{
+    return m_weapon.getMagazineSize();
+}
+
+bool Player::isReloading() const
+{
+    return m_weapon.isReloading();
+}
+
+int Player::checkHit(const sf::FloatRect& targetBounds)
 {
     return m_weapon.checkHit(targetBounds);
 }

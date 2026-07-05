@@ -3,7 +3,6 @@
 #include <ctime>
 #include <cmath>
 
-const int EnemyManager::PLAYER_BULLET_DAMAGE = 25;
 const int EnemyManager::ENEMY_BULLET_DAMAGE = 10;
 const int EnemyManager::MELEE_DAMAGE = 20;
 
@@ -40,7 +39,7 @@ void EnemyManager::update(sf::Time deltaTime, sf::Vector2f playerPosition)
             sf::Vector2f direction = playerPosition - enemy.getPosition();
             float angle = std::atan2(direction.y, direction.x);
 
-            m_enemyBullets.emplace_back(m_enemyBulletTexture, enemy.getPosition(), sf::radians(angle));
+            m_enemyBullets.emplace_back(m_enemyBulletTexture, enemy.getPosition(), sf::radians(angle), ENEMY_BULLET_DAMAGE);
         }
     }
 
@@ -96,20 +95,26 @@ std::size_t EnemyManager::checkCollisions(Player& player)
 {
     std::size_t destroyedCount = 0;
 
-    m_enemies.erase(
-        std::remove_if(m_enemies.begin(), m_enemies.end(),
-            [&player, &destroyedCount](Enemy& enemy)
+    for (auto it = m_enemies.begin(); it != m_enemies.end();)
+    {
+        // Damage now comes from whichever bullet actually hit —
+        // different weapons deal different damage, so a flat
+        // constant no longer makes sense here.
+        int damage = player.checkHit(it->getBounds());
+
+        if (damage > 0)
+        {
+            bool destroyed = it->takeDamage(damage);
+            if (destroyed)
             {
-                if (player.checkHit(enemy.getBounds()))
-                {
-                    bool destroyed = enemy.takeDamage(PLAYER_BULLET_DAMAGE);
-                    if (destroyed)
-                        destroyedCount++;
-                    return destroyed;
-                }
-                return false;
-            }),
-        m_enemies.end());
+                it = m_enemies.erase(it);
+                destroyedCount++;
+                continue;
+            }
+        }
+
+        ++it;
+    }
 
     return destroyedCount;
 }
@@ -142,7 +147,7 @@ bool EnemyManager::checkEnemyBulletHits(Player& player)
             {
                 if (bullet.getBounds().findIntersection(player.getBounds()))
                 {
-                    if (player.takeDamage(EnemyManager::ENEMY_BULLET_DAMAGE))
+                    if (player.takeDamage(bullet.getDamage()))
                     {
                         playerWasHit = true;
                     }

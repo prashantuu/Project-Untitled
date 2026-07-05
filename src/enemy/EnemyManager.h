@@ -38,7 +38,6 @@ private:
     sf::Texture& getTextureForType(EnemyType type);
 
 private:
-    static const int PLAYER_BULLET_DAMAGE; // TODO: move to Weapon once weapons have varying damage (Milestone 25)
     static const int ENEMY_BULLET_DAMAGE;
     static const int MELEE_DAMAGE;
 

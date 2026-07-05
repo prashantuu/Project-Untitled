@@ -13,8 +13,17 @@ public:
     void update(sf::Time deltaTime, const sf::RenderWindow& window);
     void draw(sf::RenderWindow& window);
 
-    void shoot();
-    bool checkHit(const sf::FloatRect& targetBounds);
+    // Returns true if a shot actually fired (not blocked by fire
+    // rate, empty magazine, or reload) — Game uses this to decide
+    // whether to play a gunshot sound.
+    bool shoot();
+    void reload();
+    bool isWeaponAutomatic() const;
+    int getAmmo() const;
+    int getMagazineSize() const;
+    bool isReloading() const;
+
+    int checkHit(const sf::FloatRect& targetBounds);
 
     sf::Vector2f getPosition() const;
     sf::FloatRect getBounds() const;
