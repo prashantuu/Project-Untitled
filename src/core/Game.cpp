@@ -43,12 +43,13 @@ Game::Game()
     , m_camera({800.f, 600.f})
     , m_audioManager(m_resources)
     , m_pickupManager(m_resources, m_worldSize)
-    , m_gameOver(false)
+    , m_state(GameState::MainMenu)
     , m_wasTriggerHeldLastFrame(false)
     , m_score(0)
     , m_font(m_resources.getFont("assets/fonts/game_font.ttf"))
     , m_gameOverText(m_font)
     , m_hud(m_resources)
+    , m_mainMenu(m_resources)
 {
     m_window.setFramerateLimit(60);
 
@@ -90,7 +91,29 @@ void Game::processEvents()
 
         if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
         {
-            if (!m_gameOver && keyPressed->code == sf::Keyboard::Key::R)
+            if (m_state == GameState::MainMenu)
+            {
+                if (keyPressed->code == sf::Keyboard::Key::W || keyPressed->code == sf::Keyboard::Key::Up)
+                {
+                    m_mainMenu.moveSelectionUp();
+                }
+                else if (keyPressed->code == sf::Keyboard::Key::S || keyPressed->code == sf::Keyboard::Key::Down)
+                {
+                    m_mainMenu.moveSelectionDown();
+                }
+                else if (keyPressed->code == sf::Keyboard::Key::Enter)
+                {
+                    if (m_mainMenu.getSelectedOption() == MenuOption::StartGame)
+                    {
+                        m_state = GameState::Playing;
+                    }
+                    else
+                    {
+                        m_window.close();
+                    }
+                }
+            }
+            else if (m_state == GameState::Playing && keyPressed->code == sf::Keyboard::Key::R)
             {
                 m_player.reload();
             }
@@ -102,7 +125,7 @@ void Game::update(sf::Time deltaTime)
 {
     m_audioManager.update();
 
-    if (m_gameOver)
+    if (m_state != GameState::Playing)
         return;
 
     m_player.update(deltaTime, m_window);
@@ -163,7 +186,7 @@ void Game::update(sf::Time deltaTime)
 
     if (!m_player.isAlive())
     {
-        m_gameOver = true;
+        m_state = GameState::GameOver;
         m_audioManager.playGameOver();
         m_audioManager.stopMusic();
     }
@@ -173,7 +196,7 @@ void Game::render()
 {
     m_window.clear(sf::Color(15, 15, 20));
 
-    if (!m_gameOver)
+    if (m_state == GameState::Playing)
     {
         m_camera.apply(m_window);
 
@@ -187,7 +210,12 @@ void Game::render()
             m_enemyManager.getEnemyCount(), m_player.getAmmo(), m_player.getMagazineSize(),
             m_player.isReloading());
     }
-    else
+    else if (m_state == GameState::MainMenu)
+    {
+        m_window.setView(m_window.getDefaultView());
+        m_mainMenu.draw(m_window);
+    }
+    else // GameState::GameOver
     {
         m_window.setView(m_window.getDefaultView());
 

@@ -10,6 +10,18 @@
 #include "audio/AudioManager.h"
 #include "gameplay/WaveManager.h"
 #include "pickup/PickupManager.h"
+#include "ui/MainMenu.h"
+
+// This game only ever occupies exactly one of these at a time — an
+// enum makes that a single fact instead of juggling multiple bools
+// (m_gameOver, m_inMenu, ...) that could drift out of sync with
+// each other.
+enum class GameState
+{
+    MainMenu,
+    Playing,
+    GameOver
+};
 
 class Game
 {
@@ -40,7 +52,7 @@ private:
     AudioManager m_audioManager;
     PickupManager m_pickupManager;
 
-    bool m_gameOver;
+    GameState m_state;
     bool m_wasTriggerHeldLastFrame;
 
     // Score is a Game-level concept — coins have no meaning inside
@@ -51,4 +63,5 @@ private:
     sf::Font& m_font;
     sf::Text m_gameOverText;
     HUD m_hud;
+    MainMenu m_mainMenu;
 };
