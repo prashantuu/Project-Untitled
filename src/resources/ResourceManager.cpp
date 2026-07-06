@@ -1,4 +1,4 @@
-#include "resource/ResourceManager.h"
+#include "resources/ResourceManager.h"
 
 sf::Texture& ResourceManager::getTexture(const std::string& path)
 {

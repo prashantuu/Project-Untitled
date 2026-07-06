@@ -1,7 +1,7 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
-#include "resource/ResourceManager.h"
+#include "resources/ResourceManager.h"
 #include "player/Player.h"
 #include "enemy/EnemyManager.h"
 #include "graphics/Camera.h"

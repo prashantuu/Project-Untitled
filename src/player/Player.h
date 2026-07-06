@@ -2,7 +2,7 @@
 
 #include <SFML/Graphics.hpp>
 #include "weapon/Weapon.h"
-#include "resource/ResourceManager.h"
+#include "resources/ResourceManager.h"
 #include "graphics/Animation.h"
 
 class Player

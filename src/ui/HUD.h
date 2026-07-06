@@ -2,7 +2,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <cstddef>
-#include "resource/ResourceManager.h"
+#include "resources/ResourceManager.h"
 
 class HUD
 {

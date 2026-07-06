@@ -107,34 +107,31 @@ void EnemyManager::spawnRandomEnemy()
     spawnEnemy(getRandomSpawnPosition(), getRandomEnemyType());
 }
 
-std::size_t EnemyManager::checkCollisions(Player& player)
+std::vector<sf::Vector2f> EnemyManager::checkCollisions(Player& player)
 {
-    std::size_t destroyedCount = 0;
+    std::vector<sf::Vector2f> deathPositions;
 
     if (m_boss)
     {
         int damage = player.checkHit(m_boss->getBounds());
+
         if (damage > 0 && m_boss->takeDamage(damage))
         {
+            deathPositions.push_back(m_boss->getPosition());
             m_boss.reset();
-            destroyedCount++;
         }
     }
 
     for (auto it = m_enemies.begin(); it != m_enemies.end();)
     {
-        // Damage now comes from whichever bullet actually hit —
-        // different weapons deal different damage, so a flat
-        // constant no longer makes sense here.
         int damage = player.checkHit(it->getBounds());
 
         if (damage > 0)
         {
-            bool destroyed = it->takeDamage(damage);
-            if (destroyed)
+            if (it->takeDamage(damage))
             {
+                deathPositions.push_back(it->getPosition());
                 it = m_enemies.erase(it);
-                destroyedCount++;
                 continue;
             }
         }
@@ -142,7 +139,7 @@ std::size_t EnemyManager::checkCollisions(Player& player)
         ++it;
     }
 
-    return destroyedCount;
+    return deathPositions;
 }
 
 bool EnemyManager::checkPlayerCollision(Player& player)

@@ -4,7 +4,7 @@
 #include <vector>
 #include <random>
 #include "bullet/Bullet.h"
-#include "resource/ResourceManager.h"
+#include "resources/ResourceManager.h"
 
 enum class WeaponType
 {

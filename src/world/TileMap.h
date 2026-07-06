@@ -3,7 +3,7 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <string>
-#include "resource/ResourceManager.h"
+#include "resources/ResourceManager.h"
 
 enum class TileType
 {

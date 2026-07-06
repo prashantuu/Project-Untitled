@@ -8,7 +8,7 @@
 #include "player/Player.h"
 #include "bullet/Bullet.h"
 #include "enemy/Boss.h"
-#include "resource/ResourceManager.h"
+#include "resources/ResourceManager.h"
 
 class EnemyManager
 {
@@ -24,11 +24,8 @@ public:
     // Player's bullets vs enemies — now applies damage instead of
     // an automatic one-hit kill, since Heavy enemies need to survive
     // multiple hits.
-    // Returns the WORLD POSITION of each enemy destroyed this
-    // frame (empty if none) — lets Game spawn blood particles
-    // and play death sounds at the right spots, without
-    // EnemyManager needing to know particles or audio exist.
-    std::vector<sf::Vector2f> checkCollisions(Player& player);
+    // Returns how many enemies were destroyed this frame.
+std::vector<sf::Vector2f> checkCollisions(Player& player);
 
     // Enemy bodies touching the player (melee).
     bool checkPlayerCollision(Player& player);

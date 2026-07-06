@@ -2,7 +2,7 @@
 
 #include <SFML/Audio.hpp>
 #include <vector>
-#include "resource/ResourceManager.h"
+#include "resources/ResourceManager.h"
 
 class AudioManager
 {

@@ -5,7 +5,7 @@
 #include <random>
 #include "pickup/Pickup.h"
 #include "player/Player.h"
-#include "resource/ResourceManager.h"
+#include "resources/ResourceManager.h"
 
 class PickupManager
 {
