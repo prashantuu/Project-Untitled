@@ -41,6 +41,8 @@ void Starship::setPosition(const float x, const float y)
 	this->sprite.setPosition(x, y);
 }
 
+
+
 void Starship::setHP(const int hp)
 {
 	this->hp = hp;

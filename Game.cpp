@@ -34,22 +34,16 @@ void Game::starttextures()
 	this->textures["BULLET"]->loadFromFile("Textures/bullet.png");
 
 	this->textures["DROIDS"] = new Texture();
-	this->textures["DROIDS"]->loadFromFile("Textures/Droid.png");
+	this->textures["DROIDS"]->loadFromFile("Textures/droid.png");
+
+	this->textures["DROIDDED"] = new Texture();
+	this->textures["DROIDDED"]->loadFromFile("Textures/droidded.png");
+
+	
+
 	
 
 
-}
-
-void Game::playbgmusic()
-{
-	this->bgMusic.openFromFile("Audio/bgmusic.mp3");
-	this->bgMusic.setVolume(10.f);
-	this->bgMusic.play();
-}
-
-void Game::stopbgmusic()
-{
-	this->bgMusic.stop();
 }
 
 void Game::startstarship()
@@ -105,7 +99,7 @@ Game::Game() {
 	this->startbackground();
 	this->startsystems();
 	this->startGUI();
-	this->playbgmusic();
+	this->whisper.playbgmusic();
 	this->starttextures();
 	this->startstarship();
 	this->startdroids();
@@ -115,7 +109,7 @@ Game::Game() {
 
 Game::~Game() {
 	
-	this->stopbgmusic();
+	this->whisper.stopbgmusic();
 	delete this->window;
 	delete this->starship;
 	
@@ -146,7 +140,7 @@ void Game::run() {
 
 		if(this->starship->getHP() > 0)
 			this->update(); 
-
+		
 		this->render();
 	}
 
@@ -162,6 +156,7 @@ void Game::updatePollEvents()
 		if (e.Event::type == Event::MouseButtonPressed) {
 			if (e.mouseButton.button == sf::Mouse::Left /*&& this->starship->canattack()*/) {
 				this->bullets.push_back(new Bullet(this->textures["BULLET"], this->starship->getPos().x + 52.f, this->starship->getPos().y - 47.f, 0.f, -10.f, 1.f));
+				this->whisper.playplayershoot();
 			}
 		}
 	}
@@ -306,6 +301,7 @@ void Game::updatedroids()
 		{
 			this->starship->loseHp(2);
 			delete this->droids.at(counter);
+			this->whisper.playdroidded();
 			this->droids.erase(this->droids.begin() + counter);
 			/*--counter;*/
 			
@@ -328,12 +324,29 @@ void Game::updateCombat()
 			{
 
 				this->points += this->droids[i]->getPoints();
+				
+				
+				
+				sf::FloatRect droidBounds = this->droids[i]->getBounds();
+				float centerX = droidBounds.left + droidBounds.width / 2.f;
+				float centerY = droidBounds.top + droidBounds.height / 2.f;
+
+				this->animationManager.spawn(*(this->textures["DROIDDED"]),
+					centerX,
+					centerY,
+					7,      // frameCount
+					0.01f,  // frameDuration
+					0.1f, 0.1f,  // scaleX, scaleY
+					false); // loop = false, it's a one-shot death effect
+
 				delete this->droids[i];
+				this->whisper.playdroidded();
 				this->droids.erase(this->droids.begin() + i);
 
 				i--;
 
 				delete this->bullets[k];
+				
 				this->bullets.erase(this->bullets.begin() + k);
 
 				droids_deleted = true;
@@ -368,7 +381,10 @@ void Game::update()
 
 	this->updatebullets();
 	this->updatedroids();
+
 	this->updateCombat();
+	this->animationManager.updateAll();
+	  
 	this->updateGUI();  //Do it arnd last so that all updated info is shown
 
 	this->updateworld();
@@ -393,7 +409,6 @@ void Game::render()
 	//Draw Background
 	this->renderworld();
 
-
 	//Render all the stuffs
 	this->starship->render(*this->window);
 	
@@ -405,6 +420,10 @@ void Game::render()
 	for (auto* droid : this->droids) {
 		droid->render(this->window);
 	}
+
+
+	//Render Explosion
+	animationManager.renderAll(*this->window); 
 
 	this->renderGUI(); 
 	
