@@ -8,6 +8,7 @@
 #include "Droids.h"
 #include "Whisper.h"
 #include "AnimationManager.h"
+#include "Boss.h"
 
 
 #include <string.h>
@@ -41,6 +42,10 @@ private:
 	RectangleShape playerhpbar;
 	RectangleShape playerhpbarback;
 
+	//BOSS
+	Boss* boss;
+
+
 
 	//Animation Manager
 	AnimationManager animationManager;
@@ -55,8 +60,13 @@ private:
 	//GUI
 	Font font;
 	Text pointText;
-
+	Text levelFinishedText;
+	
 	Text GameOVertext;
+
+	//Gamefinished 
+	bool levelFinished = false;
+
 
 
 	//Droids
@@ -86,8 +96,29 @@ private:
 	void startGUI();
 
 
-
+	//Boss Related
+	void startBoss();
 	
+
+	// Waves
+	enum class WaveState { Spawning, WaveCooldown, AllWavesCleared };
+	WaveState waveState = WaveState::Spawning;
+
+	int currentWave = 1;
+	static const int totalWaves = 3;
+	
+	int waveDroidCounts[totalWaves] = { 25, 25, 50 };// increasing per wave
+	
+	float waveSpawnIntervals[totalWaves] = { 0.8, 0.5f, 0.5f };  // faster each wave
+
+	int droidsSpawnedThisWave = 0;
+	int droidsAliveThisWave = 0;
+
+	float waveSpawnTimer = 0.f;
+	float waveCooldownTimer = 0.f;
+	float waveCooldownMax = 4.f;   // gap between waves
+
+	sf::Clock waveClock;   // for real dt
 
 
 

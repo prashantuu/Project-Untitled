@@ -24,9 +24,15 @@ private:
 	void startvariable();
 	void starttexture();
 	void startsprite();
+
+	bool entering = true;
+	float targetY = 0.f;
+	float entrySpeed = 4.f;   // px per frame, matches existing frame-based movement style
 	
 
 public:
+	Starship(float windowWidth, float windowHeight);   // new overload
+	bool isEntering() const;
 	Starship();
 	virtual ~Starship();
 

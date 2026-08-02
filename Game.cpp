@@ -39,6 +39,15 @@ void Game::starttextures()
 	this->textures["DROIDDED"] = new Texture();
 	this->textures["DROIDDED"]->loadFromFile("Textures/droidded.png");
 
+	this->textures["DEATHSTAR"] = new Texture();
+	this->textures["DEATHSTAR"]->loadFromFile("Textures/deathstar.png");
+
+	this->textures["CHARGE"] = new Texture();
+	this->textures["CHARGE"]->loadFromFile("Textures/energy_charge_spritesheet_1.png");
+
+	this->textures["LASER"] = new Texture();
+	this->textures["LASER"]->loadFromFile("Textures/green_laser_elongate_spritesheet.png");
+
 	
 
 	
@@ -48,20 +57,48 @@ void Game::starttextures()
 
 void Game::startstarship()
 {
-	this->starship = new Starship; //New Pointer starship of Class type Starship
+	this->starship = new Starship(this->window->getSize().x, this->window->getSize().y);
+	 //New Pointer starship of Class type Starship
 
+}
 
-	
+void Game::startBoss()
+{
+	this->boss = new Boss(*this->textures["DEATHSTAR"], *this->textures["CHARGE"], *this->textures["LASER"],
+		this->window->getSize().x, this->window->getSize().y); 
+
 }
 
 void Game::startdroids()
 {
-	this->spawnTimerMax = 50.f;
-	this->spawnTimer = this->spawnTimerMax;
+	currentWave = 1;
+	droidsSpawnedThisWave = 0;
+	droidsAliveThisWave = 0;
+	waveState = WaveState::Spawning;
+	waveSpawnTimer = 0.f;
 }
 
 void Game::startGUI()
 {
+
+	this->levelFinishedText.setFont(this->font);
+	this->levelFinishedText.setCharacterSize(55);   // fits comfortably in 720px width
+	this->levelFinishedText.setFillColor(Color::Green);
+	this->levelFinishedText.setString("LEVEL FINISHED!!");
+
+	sf::FloatRect textBounds = this->levelFinishedText.getLocalBounds();
+	this->levelFinishedText.setOrigin(
+		textBounds.left + textBounds.width / 2.f,
+		textBounds.top + textBounds.height / 2.f
+	);
+	this->levelFinishedText.setPosition(
+		this->window->getSize().x / 2.f - (textBounds.width + 100.f),
+		this->window->getSize().y / 2.f
+	);
+
+
+
+
 	//Loading Fonts
 	if (!this->font.loadFromFile("Fonts/font.ttf"))
 		std::cout << "ERROR ::GAME : FAILED TO LOAD FONT" << '\n';
@@ -87,7 +124,7 @@ void Game::startGUI()
 
 	//starting ship hp
 	this->playerhpbar.setSize(Vector2f(300.f, 25.f));
-	this->playerhpbar.setFillColor(Color::Red);
+	this->playerhpbar.setFillColor(Color::Green);
 	this->playerhpbar.setPosition(Vector2f(20.f, 20.f));
 
 	this->playerhpbarback = this->playerhpbar;
@@ -101,6 +138,7 @@ Game::Game() {
 	this->startGUI();
 	this->whisper.playbgmusic();
 	this->starttextures();
+	this->startBoss();
 	this->startstarship();
 	this->startdroids();
 	
@@ -109,9 +147,10 @@ Game::Game() {
 
 Game::~Game() {
 	
-	this->whisper.stopbgmusic();
+	
 	delete this->window;
 	delete this->starship;
+	delete this->boss;
 	
 	// No need to delete loaded music as CPP gonna do it automatically as the music is normal variable
 	//Delete Textures
@@ -134,13 +173,16 @@ Game::~Game() {
 
 //Functions while Running the Game
 void Game::run() {
-	while (this->window->isOpen()) {  // Updates and Renders Frame everytime window is opened
-		
+
+
+	while (this->window->isOpen()) {
 		this->updatePollEvents();
 
-		if(this->starship->getHP() > 0)
-			this->update(); 
-		
+		if (this->starship->getHP() > 0 && !this->levelFinished)
+			this->update();
+		else
+			this->animationManager.updateAll();   // let animations finish even after game/level ends
+
 		this->render();
 	}
 
@@ -167,7 +209,8 @@ void Game::updateInput()
 {	
 	
 
-	
+	if (this->starship->isEntering())
+		return;   // no manual control until it finishes flying in
 
 	//Move Player
 	if (Keyboard::isKeyPressed(Keyboard::A))
@@ -269,91 +312,261 @@ void Game::updatecollision()
 	
 }
 
+//Update Wave System :
 void Game::updatedroids()
 {
-	//Spawning Droids
-	this->spawnTimer += 0.5f;
-	if (this->spawnTimer >= this->spawnTimerMax)
+	float dt = waveClock.restart().asSeconds();
+
+	switch (waveState)
 	{
-		this->droids.push_back(new Droids(this->textures["DROIDS"],rand() % this->window->getSize().x - 20.f, -100.f)); // Spawing of Enemies
-		this->spawnTimer = 0.f; 
-		
+	case WaveState::Spawning:
+	{
+		waveSpawnTimer += dt;
+		int waveIndex = currentWave - 1;
+
+		if (droidsSpawnedThisWave < waveDroidCounts[waveIndex] &&
+			waveSpawnTimer >= waveSpawnIntervals[waveIndex])
+		{
+			waveSpawnTimer = 0.f;
+			this->droids.push_back(new Droids(this->textures["DROIDS"],
+				static_cast<float>(rand() % (int)this->window->getSize().x - 20.f), -100.f));
+			droidsSpawnedThisWave++;
+			droidsAliveThisWave++;
+		}
+
+		// Wave cleared: all spawned, and all dead/gone
+		if (droidsSpawnedThisWave >= waveDroidCounts[waveIndex] && droidsAliveThisWave <= 0)
+		{
+			if (currentWave < totalWaves)
+			{
+				currentWave++;
+				droidsSpawnedThisWave = 0;
+				waveCooldownTimer = 0.f;
+				waveState = WaveState::WaveCooldown;
+			}
+			else
+			{
+				waveState = WaveState::AllWavesCleared;
+				this->boss->triggerSpawn();   // <-- boss appears now, see Boss changes below
+			}
+		}
+		break;
 	}
-		
-	//Updating Droids
+
+	case WaveState::WaveCooldown:
+	{
+		waveCooldownTimer += dt;
+		if (waveCooldownTimer >= waveCooldownMax)
+			waveState = WaveState::Spawning;
+		break;
+	}
+
+	case WaveState::AllWavesCleared:
+		break;   // nothing left to spawn; boss handles itself from here
+	}
+
+	// Updating + culling existing droids (unchanged logic, but decrement alive count)
 	unsigned counter = 0;
-	for (auto* droid : this->droids) {
+	for (auto* droid : this->droids)
+	{
 		droid->update();
 
-
-
-		if (droid->getBounds().top /*+ droid->getBounds().height*/ > this->window->getSize().y)
+		if (droid->getBounds().top > this->window->getSize().y)
 		{
-
+			this->starship->loseHp(2.5);
 			delete this->droids.at(counter);
 			this->droids.erase(this->droids.begin() + counter);
-			/*--counter;*/
-
-
+			droidsAliveThisWave--;
 		}
-		// Enemy Colliding with Player
+
+		//Left World Collision
+		else if (droid->getBounds().left < 0.f)
+		{
+			delete this->droids.at(counter);
+			this->droids.erase(this->droids.begin() + counter);
+			droidsAliveThisWave--;
+		}
+
+		//Right  World Collision
+		else if (droid->getBounds().left + droid->getBounds().width > this->window->getSize().x)
+		{
+			delete this->droids.at(counter);
+			this->droids.erase(this->droids.begin() + counter);
+			droidsAliveThisWave--;
+		}
+
 		else if (droid->getBounds().intersects(this->starship->getBounds()))
 		{
-			this->starship->loseHp(2);
+			this->starship->loseHp(5);
+			sf::FloatRect droidBounds = this->droids.at(counter)->getBounds();
+			float centerX = droidBounds.left + droidBounds.width / 2.f;
+			float centerY = droidBounds.top + droidBounds.height / 2.f;
+			
+			this->animationManager.spawn(*(this->textures["DROIDDED"]),
+				centerX,
+				centerY,
+				7,      // frameCount
+				0.01f,  // frameDuration
+				0.1f, 0.1f,  // scaleX, scaleY
+				false); // loop = false, it's a one-shot death effect
 			delete this->droids.at(counter);
 			this->whisper.playdroidded();
 			this->droids.erase(this->droids.begin() + counter);
-			/*--counter;*/
-			
+			droidsAliveThisWave--;
 		}
 
 		++counter;
 	}
-
 }
 
-void Game::updateCombat() 
+//NONE WAVE SYSTEM : 
+
+//void Game::updatedroids()
+//{
+//	//Spawning Droids
+//	this->spawnTimer += 0.5f;
+//	if (this->spawnTimer >= this->spawnTimerMax)
+//	{
+//		this->droids.push_back(new Droids(this->textures["DROIDS"],rand() % this->window->getSize().x - 20.f, -100.f)); // Spawing of Enemies
+//		this->spawnTimer = 0.f; 
+//		
+//	}
+//		
+//	//Updating Droids
+//	unsigned counter = 0;
+//	for (auto* droid : this->droids) {
+//		droid->update();
+//
+//
+//
+//		if (droid->getBounds().top /*+ droid->getBounds().height*/ > this->window->getSize().y)
+//		{
+//
+//			delete this->droids.at(counter);
+//			this->droids.erase(this->droids.begin() + counter);
+//			/*--counter;*/
+//
+//
+//		}
+//		// Enemy Colliding with Player
+//		else if (droid->getBounds().intersects(this->starship->getBounds()))
+//		{
+//			this->starship->loseHp(2);
+//			sf::FloatRect droidBounds = this->droids.at(counter)->getBounds();
+//			float centerX = droidBounds.left + droidBounds.width / 2.f;
+//			float centerY = droidBounds.top + droidBounds.height / 2.f;
+//
+//			this->animationManager.spawn(*(this->textures["DROIDDED"]),
+//				centerX,
+//				centerY,
+//				7,      // frameCount
+//				0.01f,  // frameDuration
+//				0.1f, 0.1f,  // scaleX, scaleY
+//				false); // loop = false, it's a one-shot death effect
+//			delete this->droids.at(counter);
+//			this->whisper.playdroidded();
+//			this->droids.erase(this->droids.begin() + counter);
+//			/*--counter;*/
+//			
+//		}
+//
+//		++counter;
+//	}
+//
+//}
+
+
+//HP Lose System :
+void Game::updateCombat()
 {
-	
 	for (int i = 0; i < this->droids.size(); ++i)
 	{
-
-		bool droids_deleted = false;
-		for (size_t k = 0; k < this->bullets.size() && droids_deleted == false ; k++) {
+		bool droidHitThisFrame = false;
+		for (size_t k = 0; k < this->bullets.size() && !droidHitThisFrame; k++)
+		{
 			if (this->droids[i]->getBounds().intersects(this->bullets[k]->getBounds()))
 			{
-
-				this->points += this->droids[i]->getPoints();
-				
-				
-				
-				sf::FloatRect droidBounds = this->droids[i]->getBounds();
-				float centerX = droidBounds.left + droidBounds.width / 2.f;
-				float centerY = droidBounds.top + droidBounds.height / 2.f;
-
-				this->animationManager.spawn(*(this->textures["DROIDDED"]),
-					centerX,
-					centerY,
-					7,      // frameCount
-					0.01f,  // frameDuration
-					0.1f, 0.1f,  // scaleX, scaleY
-					false); // loop = false, it's a one-shot death effect
-
-				delete this->droids[i];
-				this->whisper.playdroidded();
-				this->droids.erase(this->droids.begin() + i);
-
-				i--;
+				this->droids[i]->takeDamage(this->bullets[k]->getDamage());
 
 				delete this->bullets[k];
-				
 				this->bullets.erase(this->bullets.begin() + k);
 
-				droids_deleted = true;
+				if (this->droids[i]->isDead())
+				{
+					this->points += this->droids[i]->getPoints();
+
+					sf::FloatRect db = this->droids[i]->getBounds();
+					this->animationManager.spawn(*(this->textures["DROIDDED"]),
+						db.left + db.width / 2.f, db.top + db.height / 2.f,
+						7, 0.05f, 0.1f, 0.1f, false);
+
+					delete this->droids[i];
+					this->whisper.playdroidded();
+					this->droids.erase(this->droids.begin() + i);
+					this->droidsAliveThisWave--;
+					i--;
+				}
+
+				droidHitThisFrame = true;
 			}
 		}
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+//Instant Kill System :
+
+//void Game::updateCombat() 
+//{
+//	
+//	for (int i = 0; i < this->droids.size(); ++i)
+//	{
+//
+//		bool droids_deleted = false;
+//		for (size_t k = 0; k < this->bullets.size() && droids_deleted == false ; k++) {
+//			if (this->droids[i]->getBounds().intersects(this->bullets[k]->getBounds()))
+//			{
+//
+//				this->points += this->droids[i]->getPoints();
+//				
+//				
+//				
+//				sf::FloatRect droidBounds = this->droids[i]->getBounds();
+//				float centerX = droidBounds.left + droidBounds.width / 2.f;
+//				float centerY = droidBounds.top + droidBounds.height / 2.f;
+//
+//				this->animationManager.spawn(*(this->textures["DROIDDED"]),
+//					centerX,
+//					centerY,
+//					7,      // frameCount
+//					0.01f,  // frameDuration
+//					0.1f, 0.1f,  // scaleX, scaleY
+//					false); // loop = false, it's a one-shot death effect
+//
+//				delete this->droids[i];
+//				this->whisper.playdroidded();
+//				this->droids.erase(this->droids.begin() + i);
+//
+//				i--;
+//
+//				delete this->bullets[k];
+//				
+//				this->bullets.erase(this->bullets.begin() + k);
+//
+//				droids_deleted = true;
+//			}
+//		}
+//	}
+//}
 
 void Game::updateGUI()
 {
@@ -372,11 +585,74 @@ void Game::updateGUI()
 void Game::update()
 {
 	
+	
 
 	this->updateInput();
 
 	this->starship->update();
 	
+	//Boss Related Updates
+	if (this->boss->consumeSpawnEvent())
+	{
+		this->whisper.stopbgmusic();   
+		this->whisper.playbossmusic();
+	}
+
+	FloatRect shipBounds = this->starship->getBounds();
+	Vector2f shipCenter(shipBounds.left + shipBounds.width / 2.f,
+		shipBounds.top + shipBounds.height / 2.f);
+
+	this->boss->update(shipCenter, shipBounds);
+	if (this->boss->consumeChargeStartedEvent()) {
+		this->boss->setChargeSoundDuration(this->whisper.getChargeSoundDuration());
+		this->whisper.playbosscharge();
+	}
+	if (this->boss->consumeHitEvent())
+		this->starship->loseHp(this->boss->getLaserDamage());
+
+	// Bullets vs boss
+	for (auto it = this->bullets.begin(); it != this->bullets.end(); )
+	{
+		if (this->boss->isActive() && this->boss->getBounds().intersects((*it)->getBounds()))
+		{
+			this->boss->takeDamage(/*(*it)->getDamage()*/10);
+
+			sf::FloatRect hitBounds = (*it)->getBounds();
+			float hitX = hitBounds.left + hitBounds.width / 2.f;
+			float hitY = hitBounds.top + hitBounds.height / 2.f;
+
+			this->animationManager.spawn(*(this->textures["DROIDDED"]),
+				hitX, hitY-50,
+				7, 0.05f,
+				0.1f, 0.1f,
+				false);
+
+			delete* it;
+			it = this->bullets.erase(it);
+		}
+		else ++it;
+	}
+	// Boss just died — spawn ONE big blast scaled to its size, and flag level complete
+	if (this->boss->consumeDeathEvent())
+	{
+		sf::FloatRect bossBounds = this->boss->getBounds();
+		float centerX = bossBounds.left + bossBounds.width / 2.f;
+		float centerY = bossBounds.top + bossBounds.height / 2.f;
+
+		float frameW = this->textures["DROIDDED"]->getSize().x / 7.f;
+		float desiredWidth = bossBounds.width * 1.4f;   // a bit bigger than the boss itself
+		float bigScale = desiredWidth / frameW;
+
+		this->animationManager.spawn(*(this->textures["DROIDDED"]), centerX, centerY, 7, 0.08f, bigScale, bigScale, false);
+
+		this->levelFinished = true;
+	}
+
+
+
+
+
+
 	this->updatecollision();
 
 	this->updatebullets();
@@ -385,6 +661,10 @@ void Game::update()
 	this->updateCombat();
 	this->animationManager.updateAll();
 	  
+
+
+
+
 	this->updateGUI();  //Do it arnd last so that all updated info is shown
 
 	this->updateworld();
@@ -412,6 +692,7 @@ void Game::render()
 	//Render all the stuffs
 	this->starship->render(*this->window);
 	
+	this->boss->render(*this->window);
 
 	for (auto* bullet : this->bullets) {
 		bullet->render(this->window);  
@@ -430,6 +711,10 @@ void Game::render()
 	//Game Over Screen
 	if (this->starship->getHP() <= 0)
 		this->window->draw(this->GameOVertext);
+
+	//Level Finished Screen
+	if (this->levelFinished)
+		this->window->draw(this->levelFinishedText);
 
 	this->window->display(); // Display the frame
 }

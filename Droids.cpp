@@ -23,11 +23,11 @@
 
 void Droids::startVariables()
 {
-	this->pointcounts = 5;/*rand() % 8 + 3;*/ // min value is 3 and Max is  10 as rand(0 to 7)
+	this->pointcounts = 5;
 	this->type = 0;
-	this->hp  = this->hpMax ;
+	this->hpMax = 2;        // set hpMax 
+	this->hp = this->hpMax; 
 	this->speed = 2.f;
-	this->hpMax = 5;
 	this->damage = 1;
 	this->points = 5;
 }	
@@ -53,6 +53,9 @@ Droids::Droids(Texture* texture,float pos_x,float pos_y)
 	this->startsprite();*/
 }
 
+
+void Droids::takeDamage(int dmg) { this->hp -= dmg; }
+bool Droids::isDead() const { return this->hp <= 0; }
 
 //Accessor
 const FloatRect Droids::getBounds() const {

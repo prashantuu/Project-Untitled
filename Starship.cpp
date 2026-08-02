@@ -6,7 +6,7 @@ void Starship::startvariable()
 {
 	this->movementspeed = 5.f;
 
-	this->hpmax = 10;
+	this->hpmax = 200;
 	this->hp = this->hpmax;
 	//this->attackcooldownmax = 10.f;
 	//this->attackcooldown = this->attackcooldownmax;
@@ -72,6 +72,19 @@ void Starship::startsprite()
 	this->sprite.scale(0.25f, 0.25f);
 }
 
+Starship::Starship(float windowWidth, float windowHeight)
+{
+	this->startvariable();
+	this->starttexture();
+	this->startsprite();
+
+	sf::FloatRect b = this->sprite.getGlobalBounds();
+	this->targetY = windowHeight - b.height - 30.f;   // resting position near bottom
+	this->sprite.setPosition(windowWidth / 2.f - b.width / 2.f, windowHeight + b.height);  // start just off-screen below
+}
+
+bool Starship::isEntering() const { return entering; }
+
 Starship::Starship()
 {
 	this->startvariable();
@@ -116,7 +129,15 @@ void Starship::move(const float dirX, const float dirY)
 
 void Starship::update() {
 
-	/*this->updateAttackcooldown();*/
+	if (entering)
+	{
+		this->sprite.move(0.f, -entrySpeed);
+		if (this->sprite.getPosition().y <= targetY)
+		{
+			this->sprite.setPosition(this->sprite.getPosition().x, targetY);
+			entering = false;
+		}
+	}
 }
 
 void Starship::render(RenderTarget& target) {

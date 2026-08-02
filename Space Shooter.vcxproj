@@ -131,9 +131,11 @@
   <ItemGroup>
     <ClCompile Include="Animation.cpp" />
     <ClCompile Include="AnimationManager.cpp" />
+    <ClCompile Include="Boss.cpp" />
     <ClCompile Include="Bullet.cpp" />
     <ClCompile Include="Droids.cpp" />
     <ClCompile Include="Game.cpp" />
+    <ClCompile Include="LaserBeam.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Starship.cpp" />
     <ClCompile Include="Whisper.cpp" />
@@ -141,9 +143,11 @@
   <ItemGroup>
     <ClInclude Include="Animation.h" />
     <ClInclude Include="AnimationManager.h" />
+    <ClInclude Include="Boss.h" />
     <ClInclude Include="Bullet.h" />
     <ClInclude Include="Droids.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="LaserBeam.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="Starship.h" />
     <ClInclude Include="Whisper.h" />

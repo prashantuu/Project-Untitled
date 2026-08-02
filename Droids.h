@@ -27,6 +27,10 @@ private:
 
 
 public:
+	//Damage Related for Droids
+	void takeDamage(int dmg);
+	bool isDead() const;
+
 
 
 	//Accessors

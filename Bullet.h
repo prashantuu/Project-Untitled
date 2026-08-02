@@ -12,14 +12,16 @@ class Bullet
 private:
 
 	Sprite shape;
-	
+
+	int damage;
 
 	Vector2f direction;
 	float movementspeed;
 
 public:
 	Bullet();
-	Bullet(Texture* texture, float pos_x, float pos_y , float dir_X,float dir_Y, float movement_speed);
+	Bullet(Texture* texture, float pos_x, float pos_y, float dir_X, float dir_Y, float movement_speed, int damage = 1);
+	int getDamage() const;
 	virtual ~Bullet();
 
 	//Accessor of Coordinates
